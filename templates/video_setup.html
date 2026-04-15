@@ -1,0 +1,219 @@
+{% extends 'base.html' %}
+{% block title %}Video Interview Setup — PrepAI{% endblock %}
+{% block extra_css %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+
+.vs-page {
+  min-height: 100vh;
+  background: #0a0a0f;
+  font-family: 'DM Sans', sans-serif;
+  color: #e5e7eb;
+}
+.vs-page .app-nav { background: rgba(10,10,15,0.95) !important; border-bottom: 1px solid #2d2d44 !important; }
+.vs-page .logo { background: linear-gradient(135deg,#7c3aed,#06b6d4) !important; -webkit-background-clip:text !important; -webkit-text-fill-color:transparent !important; }
+.vs-page .nav-link { color: #9ca3af !important; }
+.vs-page .nav-link:hover { color: #a78bfa !important; background: rgba(124,58,237,0.08) !important; }
+.vs-page .nav-link.active { color: #a78bfa !important; background: rgba(124,58,237,0.12) !important; }
+.vs-page .nav-avatar { background: linear-gradient(135deg,#7c3aed,#06b6d4) !important; }
+.vs-page .btn-logout { color: #f87171 !important; border-color: rgba(248,113,113,0.3) !important; }
+
+.vs-wrap { max-width: 620px; margin: 0 auto; padding: 100px 24px 80px; }
+
+.vs-hero { text-align: center; margin-bottom: 36px; }
+.vs-icon { font-size: 60px; margin-bottom: 14px; }
+.vs-title { font-size: 30px; font-weight: 800; color: #f9fafb; margin-bottom: 8px; }
+.vs-sub { color: #6b7280; font-size: 15px; line-height: 1.7; max-width: 440px; margin: 0 auto; }
+
+.vs-card {
+  background: #1a1a2e; border: 1px solid #2d2d44;
+  border-radius: 20px; padding: 36px;
+}
+
+.field-group { margin-bottom: 28px; }
+.field-label {
+  font-size: 11px; font-weight: 700; letter-spacing: 2px;
+  text-transform: uppercase; color: #6b7280; margin-bottom: 10px; display: block;
+}
+.field-input {
+  width: 100%; padding: 14px 18px;
+  background: #23232f; border: 1px solid #2d2d44;
+  border-radius: 12px; color: #f9fafb; font-size: 15px;
+  font-family: 'DM Sans', sans-serif; outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.field-input:focus { border-color: #7c3aed; box-shadow: 0 0 0 3px rgba(124,58,237,0.15); }
+.field-input::placeholder { color: #4b5563; }
+
+/* Duration Grid */
+.duration-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
+.duration-opt { position: relative; }
+.duration-opt input[type=radio] { position: absolute; opacity: 0; width: 0; height: 0; }
+.duration-card {
+  border: 1px solid #2d2d44; border-radius: 14px; padding: 16px 8px;
+  text-align: center; cursor: pointer; background: #23232f;
+  transition: all 0.2s; display: block;
+}
+.duration-card:hover { border-color: rgba(124,58,237,0.4); background: rgba(124,58,237,0.06); }
+.duration-opt input:checked + .duration-card {
+  border-color: #7c3aed; background: rgba(124,58,237,0.1);
+  box-shadow: 0 0 0 2px rgba(124,58,237,0.2);
+}
+.duration-time { font-size: 20px; font-weight: 800; color: #f9fafb; }
+.duration-qs   { font-size: 11px; color: #6b7280; margin-top: 3px; }
+.duration-badge {
+  display: inline-block; margin-top: 5px; padding: 2px 8px; border-radius: 999px;
+  font-size: 10px; font-weight: 700; background: rgba(124,58,237,0.12); color: #a78bfa;
+}
+
+/* Tips box */
+.tips-box {
+  background: rgba(124,58,237,0.06); border: 1px solid rgba(124,58,237,0.15);
+  border-radius: 14px; padding: 16px 18px; margin-bottom: 24px;
+}
+.tips-title { font-size: 13px; font-weight: 700; color: #a78bfa; margin-bottom: 10px; }
+.tips-list { list-style: none; padding: 0; margin: 0; }
+.tips-list li {
+  font-size: 13px; color: #6b7280; line-height: 1.7;
+  padding-left: 20px; position: relative;
+}
+.tips-list li::before { content:'✓'; position:absolute; left:0; color:#7c3aed; font-weight:700; }
+
+.error-msg {
+  background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.25);
+  border-radius: 12px; padding: 12px 16px; color: #f87171; font-size: 14px; margin-bottom: 20px;
+}
+
+.btn-start {
+  width: 100%; padding: 16px; border-radius: 12px;
+  background: linear-gradient(135deg,#7c3aed,#06b6d4);
+  border: none; color: #fff; font-size: 16px; font-weight: 700;
+  font-family: 'DM Sans', sans-serif; cursor: pointer;
+  box-shadow: 0 4px 24px rgba(124,58,237,0.3); transition: all 0.3s;
+}
+.btn-start:hover { transform: translateY(-2px); filter: brightness(1.1); }
+.btn-start:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.mini-spinner {
+  display: inline-block; width: 16px; height: 16px;
+  border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff;
+  border-radius: 50%; animation: spin 0.7s linear infinite;
+  vertical-align: middle; margin-right: 8px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="vs-page">
+
+<nav class="app-nav">
+  <a href="{% url 'landing' %}" class="logo">PrepAI</a>
+  <div class="nav-right">
+    <a href="{% url 'home' %}" class="nav-link">Home</a>
+    <a href="{% url 'practice' %}" class="nav-link">Practice</a>
+    <a href="{% url 'dashboard' %}" class="nav-link">Dashboard</a>
+    <a href="{% url 'video_setup' %}" class="nav-link active">🎥 Video</a>
+    <a href="{% url 'leaderboard' %}" class="nav-link">🏆</a>
+    <div class="nav-avatar">{{ request.user.username|first|upper }}</div>
+    <a href="{% url 'logout' %}" class="btn-logout">Logout</a>
+  </div>
+</nav>
+
+<div class="vs-wrap">
+
+  <div class="vs-hero">
+    <div class="vs-icon">🎥</div>
+    <div class="vs-title">Video Interview</div>
+    <div class="vs-sub">AI speaks the questions, you answer out loud. Get scored on content, clarity, and communication.</div>
+  </div>
+
+  <div class="vs-card">
+
+    {% if error %}
+    <div class="error-msg">⚠️ {{ error }}</div>
+    {% endif %}
+
+    <form method="POST" id="setupForm">
+      {% csrf_token %}
+
+      <div class="field-group">
+        <label class="field-label">Job Role / Position</label>
+        <input type="text" name="role" class="field-input"
+               placeholder="e.g. Python Developer, Data Analyst, UI/UX Designer"
+               required autocomplete="off">
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">Interview Duration</label>
+        <div class="duration-grid">
+          <label class="duration-opt">
+            <input type="radio" name="duration" value="10" checked>
+            <span class="duration-card">
+              <div class="duration-time">10 min</div>
+              <div class="duration-qs">6 questions</div>
+              <div class="duration-badge">Quick</div>
+            </span>
+          </label>
+          <label class="duration-opt">
+            <input type="radio" name="duration" value="20">
+            <span class="duration-card">
+              <div class="duration-time">20 min</div>
+              <div class="duration-qs">15 questions</div>
+              <div class="duration-badge">Standard</div>
+            </span>
+          </label>
+          <label class="duration-opt">
+            <input type="radio" name="duration" value="30">
+            <span class="duration-card">
+              <div class="duration-time">30 min</div>
+              <div class="duration-qs">20 questions</div>
+              <div class="duration-badge">In-depth</div>
+            </span>
+          </label>
+          <label class="duration-opt">
+            <input type="radio" name="duration" value="40">
+            <span class="duration-card">
+              <div class="duration-time">40 min</div>
+              <div class="duration-qs">25 questions</div>
+              <div class="duration-badge">Advanced</div>
+            </span>
+          </label>
+          <label class="duration-opt">
+            <input type="radio" name="duration" value="60">
+            <span class="duration-card">
+              <div class="duration-time">1 hour</div>
+              <div class="duration-qs">40 questions</div>
+              <div class="duration-badge">⭐ Full</div>
+            </span>
+          </label>
+        </div>
+      </div>
+
+      <div class="tips-box">
+        <div class="tips-title">📋 Before You Start</div>
+        <ul class="tips-list">
+          <li>Allow camera and microphone access when prompted</li>
+          <li>Sit in a well-lit, quiet environment</li>
+          <li>AI will speak each question out loud</li>
+          <li>Click Record, answer verbally, then click Stop</li>
+          <li>Use Skip if you don't know a question — move on</li>
+        </ul>
+      </div>
+
+      <button type="submit" class="btn-start" id="startBtn">
+        🎬 Start Video Interview
+      </button>
+    </form>
+
+  </div>
+</div>
+</div>
+
+<script>
+document.getElementById('setupForm').addEventListener('submit', function() {
+  const btn = document.getElementById('startBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="mini-spinner"></span> Generating questions…';
+});
+</script>
+{% endblock %}

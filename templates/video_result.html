@@ -1,0 +1,212 @@
+{% extends 'base.html' %}
+{% block title %}Video Interview Results — PrepAI{% endblock %}
+{% block extra_css %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+
+.vr-page {
+  min-height: 100vh;
+  background: #0a0a0f;
+  font-family: 'DM Sans', sans-serif;
+  color: #e5e7eb;
+}
+.vr-page .app-nav { background: rgba(10,10,15,0.95) !important; border-bottom: 1px solid #2d2d44 !important; }
+.vr-page .logo { background: linear-gradient(135deg,#7c3aed,#06b6d4) !important; -webkit-background-clip:text !important; -webkit-text-fill-color:transparent !important; }
+.vr-page .nav-link { color: #9ca3af !important; }
+.vr-page .nav-link:hover { color: #a78bfa !important; background: rgba(124,58,237,0.08) !important; }
+.vr-page .nav-avatar { background: linear-gradient(135deg,#7c3aed,#06b6d4) !important; }
+.vr-page .btn-logout { color: #f87171 !important; border-color: rgba(248,113,113,0.3) !important; }
+
+.vr-wrap { max-width: 860px; margin: 0 auto; padding: 90px 24px 80px; }
+
+/* Hero */
+.vr-hero {
+  text-align: center; padding: 48px 32px;
+  background: #1a1a2e; border: 1px solid #2d2d44;
+  border-radius: 20px; margin-bottom: 24px; position: relative; overflow: hidden;
+}
+.vr-hero::before {
+  content:''; position:absolute; inset:0;
+  background: radial-gradient(circle at 50% 0%, rgba(124,58,237,0.1) 0%, transparent 65%);
+}
+.vr-role   { color: #6b7280; font-size: 14px; margin-bottom: 6px; }
+.vr-title  { font-size: 26px; font-weight: 800; color: #f9fafb; margin-bottom: 24px; }
+.vr-score-num { font-size: 80px; font-weight: 900; line-height: 1; }
+.vr-score-den { font-size: 22px; color: #6b7280; }
+.vr-verdict   { font-size: 20px; font-weight: 700; color: #f9fafb; margin-top: 12px; }
+.vr-summary   { color: #6b7280; font-size: 14px; margin-top: 8px; max-width: 480px; margin-left:auto; margin-right:auto; }
+
+/* Stats row */
+.stats-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-bottom: 24px; }
+.stat-card {
+  background: #1a1a2e; border: 1px solid #2d2d44;
+  border-radius: 16px; padding: 20px; text-align: center;
+}
+.stat-val   { font-size: 28px; font-weight: 800; }
+.stat-label { color: #6b7280; font-size: 13px; margin-top: 4px; }
+
+/* Section head */
+.section-head { font-size: 18px; font-weight: 800; color: #f9fafb; margin-bottom: 16px; }
+
+/* Attempt card */
+.attempt-card {
+  background: #1a1a2e; border: 1px solid #2d2d44;
+  border-radius: 16px; padding: 24px; margin-bottom: 12px;
+  transition: border-color 0.2s;
+  animation: fadeUp 0.4s ease both;
+}
+.attempt-card:hover { border-color: rgba(124,58,237,0.25); }
+@keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+.attempt-head { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 14px; }
+.a-score-badge {
+  width: 50px; height: 50px; border-radius: 12px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 800;
+}
+.high { background: rgba(16,185,129,0.12); color: #10b981; border: 1px solid rgba(16,185,129,0.2); }
+.mid  { background: rgba(6,182,212,0.1);   color: #06b6d4; border: 1px solid rgba(6,182,212,0.2); }
+.low  { background: rgba(248,113,113,0.1); color: #f87171; border: 1px solid rgba(248,113,113,0.2); }
+.skipped { background: rgba(107,114,128,0.1); color: #9ca3af; border: 1px solid rgba(107,114,128,0.2); }
+
+.a-q { font-weight: 600; font-size: 15px; line-height: 1.5; flex: 1; color: #f9fafb; }
+
+.detail-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 2px;
+  text-transform: uppercase; color: #6b7280; margin-bottom: 4px; margin-top: 12px;
+}
+.detail-body { font-size: 13px; color: #9ca3af; line-height: 1.7; }
+.transcript-body { font-style: italic; }
+
+.filler-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.filler-tag {
+  padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 600;
+  background: rgba(251,191,36,0.1); color: #fbbf24; border: 1px solid rgba(251,191,36,0.2);
+}
+.no-fillers {
+  font-size: 12px; color: #10b981; font-weight: 600;
+  background: rgba(16,185,129,0.08); padding: 3px 12px;
+  border-radius: 999px; border: 1px solid rgba(16,185,129,0.2); display: inline-block;
+}
+
+/* CTA Row */
+.cta-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 32px; }
+.btn-cta {
+  flex: 1; padding: 13px; border-radius: 12px; border: none;
+  font-size: 14px; font-weight: 700; font-family: 'DM Sans', sans-serif;
+  cursor: pointer; text-decoration: none; text-align: center; transition: all 0.3s;
+  min-width: 140px;
+}
+.btn-primary { background: linear-gradient(135deg,#7c3aed,#06b6d4); color:#fff; box-shadow:0 4px 20px rgba(124,58,237,0.3); }
+.btn-primary:hover { transform:translateY(-2px); }
+.btn-green   { background: linear-gradient(135deg,#10b981,#059669); color:#fff; box-shadow:0 4px 20px rgba(16,185,129,0.25); }
+.btn-green:hover { transform:translateY(-2px); }
+.btn-outline { background:#1a1a2e; border:1px solid #2d2d44; color:#9ca3af; }
+.btn-outline:hover { border-color:#a78bfa; color:#a78bfa; }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="vr-page">
+
+<nav class="app-nav">
+  <a href="{% url 'landing' %}" class="logo">PrepAI</a>
+  <div class="nav-right">
+    <a href="{% url 'home' %}" class="nav-link">Home</a>
+    <a href="{% url 'dashboard' %}" class="nav-link">Dashboard</a>
+    <a href="{% url 'leaderboard' %}" class="nav-link">🏆</a>
+    <div class="nav-avatar">{{ request.user.username|first|upper }}</div>
+    <a href="{% url 'logout' %}" class="btn-logout">Logout</a>
+  </div>
+</nav>
+
+<div class="vr-wrap">
+
+  <div class="vr-hero">
+    <div class="vr-role">{{ video_session.role }} — {{ video_session.duration_minutes }} min interview</div>
+    <div class="vr-title">Video Interview Complete 🎥</div>
+    <div class="vr-score-num" style="color:{% if overall >= 7 %}#10b981{% elif overall >= 5 %}#06b6d4{% else %}#f87171{% endif %}">{{ overall }}</div>
+    <div class="vr-score-den">/10</div>
+    <div class="vr-verdict">
+      {% if overall >= 8 %}🌟 Outstanding Performance
+      {% elif overall >= 6 %}👍 Strong Performance
+      {% elif overall >= 4 %}📈 Room to Improve
+      {% else %}💪 Keep Practicing{% endif %}
+    </div>
+    <div class="vr-summary">
+      You answered {{ answered }} out of {{ total }} questions in a {{ video_session.duration_minutes }}-minute interview.
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-val" style="color:#a78bfa">{{ answered }}</div>
+      <div class="stat-label">Questions Answered</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" style="color:{% if overall >= 7 %}#10b981{% elif overall >= 5 %}#06b6d4{% else %}#f87171{% endif %}">{{ overall }}/10</div>
+      <div class="stat-label">Average Score</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" style="color:#fbbf24">{{ video_session.duration_minutes }}m</div>
+      <div class="stat-label">Duration</div>
+    </div>
+  </div>
+
+  <div class="section-head">📋 Question-by-Question Breakdown</div>
+
+  {% for item in attempts_data %}
+  {% with a=item.attempt s=a.score %}
+  <div class="attempt-card" style="animation-delay:{{ forloop.counter0 }}00ms">
+    <div class="attempt-head">
+      <div class="a-score-badge {% if not a.transcript or a.transcript == '[No answer recorded]' %}skipped{% elif s >= 7 %}high{% elif s >= 5 %}mid{% else %}low{% endif %}">
+        {% if not a.transcript or a.transcript == '[No answer recorded]' %}—{% else %}{{ s }}/10{% endif %}
+      </div>
+      <div class="a-q">Q{{ a.order }}. {{ a.question_text }}</div>
+    </div>
+
+    {% if a.transcript and a.transcript != '[No answer recorded]' %}
+    <div class="detail-label">📝 Your Answer (Transcribed)</div>
+    <div class="detail-body transcript-body">{{ a.transcript }}</div>
+    {% else %}
+    <div class="detail-label" style="color:#6b7280">⏭ Skipped</div>
+    <div class="detail-body" style="color:#4b5563;">This question was skipped.</div>
+    {% endif %}
+
+    {% if a.ai_feedback and a.transcript != '[No answer recorded]' %}
+    <div class="detail-label" style="color:#a78bfa">🤖 AI Feedback</div>
+    <div class="detail-body">{{ a.ai_feedback }}</div>
+    {% endif %}
+
+    {% if a.communication_tips %}
+    <div class="detail-label" style="color:#06b6d4">💬 Communication Tips</div>
+    <div class="detail-body">{{ a.communication_tips }}</div>
+    {% endif %}
+
+    {% if a.transcript and a.transcript != '[No answer recorded]' %}
+    <div class="detail-label">🚫 Filler Words</div>
+    <div class="filler-row">
+      {% if item.fillers %}
+        {% for f in item.fillers %}<span class="filler-tag">{{ f }}</span>{% endfor %}
+      {% else %}
+        <span class="no-fillers">✅ No filler words — great clarity!</span>
+      {% endif %}
+    </div>
+    {% endif %}
+
+  </div>
+  {% endwith %}
+  {% empty %}
+  <p style="color:#6b7280;">No answers recorded.</p>
+  {% endfor %}
+
+  <div class="cta-row">
+    <a href="{% url 'video_setup' %}" class="btn-cta btn-primary">🎥 New Interview</a>
+    <a href="{% url 'home' %}"        class="btn-cta btn-green">📝 Text Interview</a>
+    <a href="{% url 'dashboard' %}"   class="btn-cta btn-outline">📊 Dashboard</a>
+    <a href="{% url 'leaderboard' %}" class="btn-cta btn-outline">🏆 Leaderboard</a>
+  </div>
+
+</div>
+</div>
+{% endblock %}

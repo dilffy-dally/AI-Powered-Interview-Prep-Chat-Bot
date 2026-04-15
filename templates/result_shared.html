@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PrepAI Report — {{ session.detected_role }}</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --c1:#7C6FFF; --c2:#FF6B8A; --text:#1a1a2e;
+    --muted:#6b7280; --border:#e5e7eb;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Segoe UI', system-ui, sans-serif; background:#f5f4ff; color:var(--text); }
+  .wrap { max-width:860px; margin:0 auto; padding:40px 24px 80px; }
+
+  .top-banner {
+    text-align:center; padding:14px;
+    background:linear-gradient(135deg, var(--c1), #a78bfa);
+    color:#fff; font-size:14px; font-weight:600; margin-bottom:0;
+  }
+  .top-banner a { color:#fff; text-decoration:underline; margin-left:8px; }
+
+  .score-hero {
+    text-align:center; padding:52px 36px;
+    background:#fff; border:1.5px solid var(--border);
+    border-radius:28px; margin-bottom:24px; margin-top:28px;
+    box-shadow:0 4px 32px rgba(124,111,255,0.09);
+  }
+  .score-role { color:var(--muted); font-size:14px; margin-bottom:6px; }
+  .score-title { font-size:26px; font-weight:800; margin-bottom:28px; }
+  .score-num { font-size:72px; font-weight:900; line-height:1; }
+  .score-denom { font-size:20px; color:var(--muted); }
+  .score-verdict { font-size:20px; font-weight:700; margin-top:12px; }
+
+  .stats-row { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:24px; }
+  .stat-card { background:#fff; border:1.5px solid var(--border); border-radius:20px; padding:22px; text-align:center; }
+  .stat-val { font-size:30px; font-weight:800; }
+  .stat-label { color:var(--muted); font-size:13px; margin-top:4px; }
+
+  .radar-card {
+    background:#fff; border:1.5px solid var(--border);
+    border-radius:24px; padding:32px; margin-bottom:24px; text-align:center;
+  }
+  .radar-title { font-size:20px; font-weight:800; margin-bottom:4px; }
+  .radar-sub { color:var(--muted); font-size:14px; margin-bottom:20px; }
+  .radar-canvas-wrap { max-width:380px; margin:0 auto; }
+
+  .section-head { font-size:18px; font-weight:800; margin-bottom:16px; }
+  .attempt-card {
+    background:#fff; border:1.5px solid var(--border);
+    border-radius:20px; padding:24px; margin-bottom:14px;
+  }
+  .attempt-head { display:flex; gap:14px; margin-bottom:14px; }
+  .attempt-score {
+    width:48px; height:48px; border-radius:12px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:800;
+  }
+  .high { background:rgba(45,206,137,0.12); color:#1aaa70; border:1.5px solid rgba(45,206,137,0.22); }
+  .mid  { background:rgba(17,205,239,0.10); color:#0a8fa8; border:1.5px solid rgba(17,205,239,0.20); }
+  .low  { background:rgba(255,107,138,0.10); color:#d9405a; border:1.5px solid rgba(255,107,138,0.20); }
+  .attempt-q { font-weight:600; font-size:15px; line-height:1.5; flex:1; }
+  .detail-label { font-size:11px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--muted); margin-bottom:4px; margin-top:10px; }
+  .detail-body { font-size:14px; line-height:1.7; color:var(--muted); }
+</style>
+</head>
+<body>
+
+<div class="top-banner">
+  📋 Shared Interview Report from PrepAI
+  <a href="{% url 'landing' %}">Try PrepAI Free →</a>
+</div>
+
+<div class="wrap">
+
+  <div class="score-hero">
+    <div class="score-role">{{ session.detected_role }}</div>
+    <div class="score-title">Interview Report — {{ session.user.username }}</div>
+    <div class="score-num" style="color:{% if overall >= 7 %}#2DCE89{% elif overall >= 5 %}#11CDEF{% else %}#FF6B8A{% endif %}">{{ overall }}</div>
+    <div class="score-denom">/10</div>
+    <div class="score-verdict">
+      {% if overall >= 8 %}🌟 Excellent Performance
+      {% elif overall >= 6 %}👍 Good Job
+      {% elif overall >= 4 %}📈 Room to Grow
+      {% else %}💪 Keep Practicing
+      {% endif %}
+    </div>
+    {% if report and report.summary %}
+    <p style="color:var(--muted);font-size:15px;max-width:480px;margin:12px auto 0;line-height:1.7;">{{ report.summary }}</p>
+    {% endif %}
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-val" style="color:var(--c1)">{{ attempts|length }}</div>
+      <div class="stat-label">Questions Answered</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" style="color:{% if overall >= 7 %}#2DCE89{% elif overall >= 5 %}#11CDEF{% else %}#FF6B8A{% endif %}">{{ overall }}/10</div>
+      <div class="stat-label">Average Score</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" style="color:#a78bfa">{{ total_questions }}</div>
+      <div class="stat-label">Total Questions</div>
+    </div>
+  </div>
+
+  {% if skill_labels %}
+  <div class="radar-card">
+    <div class="radar-title">🕸️ Skill Radar</div>
+    <div class="radar-sub">Performance across detected skills</div>
+    <div class="radar-canvas-wrap">
+      <canvas id="radarChart" width="380" height="380"></canvas>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="section-head">📋 Question-by-Question Breakdown</div>
+
+  {% for attempt in attempts %}
+  {% with s=attempt.score %}
+  <div class="attempt-card">
+    <div class="attempt-head">
+      <div class="attempt-score {% if s >= 7 %}high{% elif s >= 5 %}mid{% else %}low{% endif %}">{{ s }}</div>
+      <div class="attempt-q">{{ attempt.question.question_text }}</div>
+    </div>
+    <div class="detail-label">Answer</div>
+    <div class="detail-body" style="font-style:italic;">{{ attempt.user_answer }}</div>
+    {% if attempt.ai_feedback %}
+    <div class="detail-label" style="color:var(--c1)">AI Feedback</div>
+    <div class="detail-body">{{ attempt.ai_feedback }}</div>
+    {% endif %}
+  </div>
+  {% endwith %}
+  {% endfor %}
+
+  <div style="text-align:center;margin-top:40px;padding:28px;background:#fff;border-radius:20px;border:1.5px solid var(--border);">
+    <p style="color:var(--muted);font-size:14px;margin-bottom:16px;">Want to ace your next interview?</p>
+    <a href="{% url 'landing' %}" style="background:linear-gradient(135deg,#7C6FFF,#FF6B8A);color:#fff;padding:14px 36px;border-radius:999px;text-decoration:none;font-weight:700;font-size:15px;">
+      Try PrepAI Free →
+    </a>
+  </div>
+
+</div>
+
+<script>
+{% if skill_labels %}
+(function() {
+  const labels = {{ skill_labels|safe }};
+  const scores = {{ skill_scores|safe }};
+  if (!labels.length) return;
+  const ctx = document.getElementById('radarChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'radar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Score',
+        data: scores,
+        backgroundColor: 'rgba(124,111,255,0.18)',
+        borderColor: '#7C6FFF',
+        borderWidth: 2.5,
+        pointBackgroundColor: '#7C6FFF',
+        pointBorderColor: '#fff',
+        pointBorderWidth: 2,
+        pointRadius: 5,
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        r: {
+          min: 0, max: 10,
+          ticks: { stepSize: 2, font: { size: 11 }, color: '#9ca3af' },
+          pointLabels: { font: { size: 12, weight: '600' }, color: '#374151' },
+          grid: { color: 'rgba(124,111,255,0.10)' },
+          angleLines: { color: 'rgba(124,111,255,0.10)' },
+        }
+      },
+      plugins: { legend: { display: false } }
+    }
+  });
+})();
+{% endif %}
+</script>
+</body>
+</html>

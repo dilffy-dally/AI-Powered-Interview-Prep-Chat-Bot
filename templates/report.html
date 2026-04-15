@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>PrepAI Report — {{ session.detected_role }}</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Segoe UI', Arial, sans-serif; background:#fff; color:#1a1a2e; padding:40px; max-width:800px; margin:0 auto; }
+
+  .header { text-align:center; border-bottom:3px solid #7C6FFF; padding-bottom:24px; margin-bottom:32px; }
+  .logo { font-size:28px; font-weight:900; color:#7C6FFF; letter-spacing:-1px; }
+  .report-title { font-size:20px; font-weight:700; margin-top:6px; color:#1a1a2e; }
+  .report-meta { font-size:13px; color:#6b7280; margin-top:4px; }
+
+  .score-box {
+    display:flex; gap:20px; margin-bottom:28px;
+    background:#f8f7ff; border:2px solid #e5e0ff; border-radius:16px; padding:20px;
+  }
+  .score-main { text-align:center; min-width:100px; }
+  .score-val { font-size:52px; font-weight:900; line-height:1; }
+  .score-denom { font-size:16px; color:#6b7280; }
+  .score-details { flex:1; }
+  .score-details h2 { font-size:18px; color:#1a1a2e; margin-bottom:6px; }
+  .score-details p { font-size:14px; color:#6b7280; line-height:1.6; }
+
+  .stats { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:28px; }
+  .stat { background:#f9f9f9; border:1px solid #e5e7eb; border-radius:12px; padding:14px; text-align:center; }
+  .stat-n { font-size:24px; font-weight:800; color:#7C6FFF; }
+  .stat-l { font-size:12px; color:#6b7280; margin-top:3px; }
+
+  .section-title { font-size:16px; font-weight:800; color:#1a1a2e; margin-bottom:14px; padding-bottom:6px; border-bottom:1px solid #e5e7eb; }
+
+  .q-block { margin-bottom:20px; border:1px solid #e5e7eb; border-radius:12px; padding:18px; page-break-inside:avoid; }
+  .q-header { display:flex; align-items:flex-start; gap:12px; margin-bottom:12px; }
+  .q-score-badge {
+    min-width:44px; height:44px; border-radius:10px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-size:15px; font-weight:800;
+  }
+  .high { background:#e6faf3; color:#1aaa70; border:1px solid #a7f3d0; }
+  .mid  { background:#e0f8ff; color:#0a8fa8; border:1px solid #a5f3fc; }
+  .low  { background:#fff0f3; color:#d9405a; border:1px solid #fecdd3; }
+  .q-text { font-size:14px; font-weight:600; line-height:1.5; }
+
+  .field-label { font-size:10px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:#9ca3af; margin-bottom:3px; margin-top:10px; }
+  .field-body { font-size:13px; color:#4b5563; line-height:1.6; font-style:italic; }
+  .feedback-body { font-style:normal; color:#374151; }
+
+  .retry-block { background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; padding:12px; margin-top:10px; }
+  .retry-scores { display:flex; gap:10px; margin-bottom:8px; }
+  .rs { text-align:center; padding:8px 14px; border-radius:8px; }
+  .rs-before { background:#fff0f3; color:#d9405a; }
+  .rs-after { background:#e6faf3; color:#1aaa70; }
+  .rs-n { font-size:18px; font-weight:800; }
+  .rs-l { font-size:10px; margin-top:2px; }
+
+  .footer { text-align:center; margin-top:40px; padding-top:20px; border-top:1px solid #e5e7eb; font-size:12px; color:#9ca3af; }
+
+  .print-btn {
+    position:fixed; bottom:30px; right:30px;
+    background:#7C6FFF; color:#fff; border:none;
+    padding:14px 28px; border-radius:999px;
+    font-size:15px; font-weight:700; cursor:pointer;
+    box-shadow:0 6px 22px rgba(124,111,255,0.40);
+  }
+  .print-btn:hover { background:#6a5ef0; }
+
+  @media print {
+    .print-btn { display:none; }
+    body { padding:20px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">PrepAI</div>
+  <div class="report-title">Interview Performance Report</div>
+  <div class="report-meta">{{ session.detected_role }}  •  {{ session.created_at|date:"F d, Y" }}  •  {{ user.username }}</div>
+</div>
+
+<div class="score-box">
+  <div class="score-main">
+    <div class="score-val" style="color:{% if overall >= 7 %}#2DCE89{% elif overall >= 5 %}#11CDEF{% else %}#FF6B8A{% endif %}">{{ overall }}</div>
+    <div class="score-denom">/10</div>
+  </div>
+  <div class="score-details">
+    <h2>{% if overall >= 8 %}🌟 Excellent Performance{% elif overall >= 6 %}👍 Good Job{% elif overall >= 4 %}📈 Room to Grow{% else %}💪 Keep Practicing{% endif %}</h2>
+    {% if report and report.summary %}
+    <p>{{ report.summary }}</p>
+    {% endif %}
+    {% if session.detected_skills %}
+    <p style="margin-top:8px;"><strong>Skills:</strong> {{ session.detected_skills }}</p>
+    {% endif %}
+  </div>
+</div>
+
+<div class="stats">
+  <div class="stat">
+    <div class="stat-n">{{ attempts|length }}</div>
+    <div class="stat-l">Questions Answered</div>
+  </div>
+  <div class="stat">
+    <div class="stat-n">{{ overall }}/10</div>
+    <div class="stat-l">Average Score</div>
+  </div>
+  <div class="stat">
+    <div class="stat-n">{{ total_questions }}</div>
+    <div class="stat-l">Total Questions</div>
+  </div>
+</div>
+
+<div class="section-title">📋 Question-by-Question Breakdown</div>
+
+{% for attempt in attempts %}
+{% with s=attempt.score %}
+<div class="q-block">
+  <div class="q-header">
+    <div class="q-score-badge {% if s >= 7 %}high{% elif s >= 5 %}mid{% else %}low{% endif %}">{{ s }}/10</div>
+    <div class="q-text">{{ attempt.question.question_text }}</div>
+  </div>
+
+  <div class="field-label">Your Answer</div>
+  <div class="field-body">{{ attempt.user_answer }}</div>
+
+  {% if attempt.ai_feedback %}
+  <div class="field-label">AI Feedback</div>
+  <div class="field-body feedback-body">{{ attempt.ai_feedback }}</div>
+  {% endif %}
+
+  {% if attempt.retry_answer %}
+  <div class="retry-block">
+    <div class="retry-scores">
+      <div class="rs rs-before">
+        <div class="rs-n">{{ s }}/10</div>
+        <div class="rs-l">Original</div>
+      </div>
+      <div style="display:flex;align-items:center;font-size:18px;">→</div>
+      <div class="rs rs-after">
+        <div class="rs-n">{{ attempt.retry_score }}/10</div>
+        <div class="rs-l">After Retry</div>
+      </div>
+    </div>
+    <div class="field-label">Retry Answer</div>
+    <div class="field-body">{{ attempt.retry_answer }}</div>
+    {% if attempt.retry_feedback %}
+    <div class="field-label">Retry Feedback</div>
+    <div class="field-body feedback-body">{{ attempt.retry_feedback }}</div>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endwith %}
+{% endfor %}
+
+<div class="footer">
+  Generated by PrepAI  •  {{ user.username }}  •  {{ session.created_at|date:"Y-m-d" }}
+</div>
+
+<button class="print-btn" onclick="window.print()">🖨️ Save as PDF</button>
+
+<script>
+  // Auto-trigger print dialog so user can save as PDF
+  window.onload = () => setTimeout(() => window.print(), 500);
+</script>
+</body>
+</html>

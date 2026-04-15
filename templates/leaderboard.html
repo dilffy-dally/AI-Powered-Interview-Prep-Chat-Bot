@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+{% block title %}Leaderboard — PrepAI{% endblock %}
+{% block extra_css %}
+<style>
+.lb-wrap { max-width: 860px; margin: 0 auto; padding: 40px 24px 80px; }
+
+.lb-hero {
+  text-align: center; padding: 48px 36px 36px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 24px; margin-bottom: 20px;
+  position: relative; overflow: hidden;
+}
+.lb-hero::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(circle at 50% 0%, rgba(124,58,237,0.10) 0%, transparent 65%);
+  pointer-events: none;
+}
+.lb-title {
+  font-family: 'Syne', sans-serif; font-size: 32px; font-weight: 800;
+  color: var(--text); margin-bottom: 8px;
+}
+.lb-sub { color: var(--muted); font-size: 15px; }
+
+/* Streak Cards */
+.streak-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+.streak-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 20px; padding: 28px 24px; text-align: center;
+}
+.streak-icon { font-size: 36px; margin-bottom: 10px; }
+.streak-val {
+  font-family: 'Syne', sans-serif; font-size: 48px; font-weight: 800;
+  background: linear-gradient(135deg, #a78bfa, #06b6d4);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  line-height: 1;
+}
+.streak-label { color: var(--muted); font-size: 14px; margin-top: 6px; }
+.streak-badge {
+  display: inline-block; margin-top: 8px; padding: 3px 14px; border-radius: 999px;
+  font-size: 11px; font-weight: 700;
+  background: rgba(124,58,237,0.12); color: #a78bfa;
+  border: 1px solid rgba(124,58,237,0.22);
+}
+
+/* Table */
+.lb-table-wrap {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 20px; overflow: hidden;
+}
+.lb-table-head {
+  display: grid; grid-template-columns: 60px 1fr 120px 100px 100px;
+  padding: 14px 24px;
+  background: rgba(124,58,237,0.06); border-bottom: 1px solid var(--border);
+  font-size: 11px; font-weight: 700; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--muted);
+}
+.lb-row {
+  display: grid; grid-template-columns: 60px 1fr 120px 100px 100px;
+  padding: 16px 24px; border-bottom: 1px solid rgba(255,255,255,0.03);
+  align-items: center; transition: background 0.15s;
+}
+.lb-row:last-child { border-bottom: none; }
+.lb-row:hover { background: rgba(124,58,237,0.04); }
+.lb-row.me { background: rgba(124,58,237,0.07); border-left: 3px solid #a78bfa; }
+
+.rank-badge {
+  width: 34px; height: 34px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 800;
+}
+.rank-1 { background: linear-gradient(135deg,#FFD700,#FFA500); color: #fff; box-shadow: 0 3px 10px rgba(255,165,0,0.30); }
+.rank-2 { background: linear-gradient(135deg,#C0C0C0,#A8A8A8); color: #fff; }
+.rank-3 { background: linear-gradient(135deg,#CD7F32,#A0522D); color: #fff; }
+.rank-n { background: rgba(124,58,237,0.12); color: #a78bfa; }
+
+.lb-username { font-weight: 600; font-size: 15px; color: var(--text); }
+.lb-you {
+  font-size: 11px; font-weight: 700; color: #a78bfa; margin-left: 8px;
+  background: rgba(124,58,237,0.12); padding: 2px 8px; border-radius: 999px;
+}
+.lb-score { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; }
+.lb-count { font-size: 14px; color: var(--muted); }
+
+.empty-state { padding: 48px; text-align: center; color: var(--muted); font-size: 15px; }
+</style>
+{% endblock %}
+
+{% block body %}
+<nav class="app-nav">
+  <a href="{% url 'landing' %}" class="logo">PrepAI</a>
+  <div class="nav-right">
+    <a href="{% url 'home' %}" class="nav-link">Home</a>
+    <a href="{% url 'practice' %}" class="nav-link">Practice</a>
+    <a href="{% url 'dashboard' %}" class="nav-link">Dashboard</a>
+    <a href="{% url 'leaderboard' %}" class="nav-link active">🏆 Leaderboard</a>
+    <a href="{% url 'logout' %}" class="btn-logout">Logout</a>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="lb-wrap">
+
+    <div class="lb-hero">
+      <div class="lb-title">🏆 Leaderboard</div>
+      <div class="lb-sub">Top performers on PrepAI — ranked by average score</div>
+    </div>
+
+    {% if request.user.is_authenticated %}
+    <div class="streak-row">
+      <div class="streak-card">
+        <div class="streak-icon">🔥</div>
+        <div class="streak-val">{{ streak }}</div>
+        <div class="streak-label">Current Streak</div>
+        <div class="streak-badge">
+          {% if streak == 0 %}Start today!
+          {% elif streak == 1 %}Day 1 — keep going!
+          {% elif streak < 5 %}Building momentum
+          {% elif streak < 10 %}On fire 🔥
+          {% else %}Unstoppable ⚡
+          {% endif %}
+        </div>
+      </div>
+      <div class="streak-card">
+        <div class="streak-icon">🏅</div>
+        <div class="streak-val">{{ best_streak }}</div>
+        <div class="streak-label">Best Streak Ever</div>
+        <div class="streak-badge">Personal Best</div>
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="lb-table-wrap">
+      <div class="lb-table-head">
+        <div>Rank</div><div>User</div><div>Avg Score</div><div>Sessions</div><div>Answers</div>
+      </div>
+
+      {% if top_users %}
+        {% for u in top_users %}
+        <div class="lb-row {% if u.user__username == request.user.username %}me{% endif %}">
+          <div>
+            <div class="rank-badge {% if forloop.counter == 1 %}rank-1{% elif forloop.counter == 2 %}rank-2{% elif forloop.counter == 3 %}rank-3{% else %}rank-n{% endif %}">
+              {% if forloop.counter == 1 %}🥇{% elif forloop.counter == 2 %}🥈{% elif forloop.counter == 3 %}🥉{% else %}{{ forloop.counter }}{% endif %}
+            </div>
+          </div>
+          <div>
+            <span class="lb-username">{{ u.user__username }}</span>
+            {% if u.user__username == request.user.username %}<span class="lb-you">You</span>{% endif %}
+          </div>
+          <div>
+            <span class="lb-score" style="color:{% if u.avg >= 7 %}#34d399{% elif u.avg >= 5 %}#06b6d4{% else %}#f87171{% endif %}">
+              {{ u.avg|floatformat:1 }}/10
+            </span>
+          </div>
+          <div class="lb-count">{{ u.sessions }} sessions</div>
+          <div class="lb-count">{{ u.answers }} answers</div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="empty-state">No data yet. Complete an interview to appear on the leaderboard!</div>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+{% endblock %}

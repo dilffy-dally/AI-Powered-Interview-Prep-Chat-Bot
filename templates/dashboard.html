@@ -1,0 +1,437 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard — PrepAI{% endblock %}
+
+{% block extra_css %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+
+.dash-page {
+  min-height: 100vh;
+  background: #0a0a0f;
+  font-family: 'DM Sans', sans-serif;
+  color: #e5e7eb;
+  padding-bottom: 60px;
+}
+
+/* DARK NAV OVERRIDE */
+.dash-page .app-nav {
+  background: rgba(10,10,15,0.92) !important;
+  border-bottom: 1px solid #2d2d44 !important;
+  backdrop-filter: blur(20px);
+}
+.dash-page .logo {
+  background: linear-gradient(135deg, #7c3aed, #06b6d4) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+.dash-page .nav-link { color: #9ca3af !important; }
+.dash-page .nav-link:hover { color: #a78bfa !important; background: rgba(124,58,237,0.08) !important; }
+.dash-page .nav-link.active { color: #a78bfa !important; background: rgba(124,58,237,0.12) !important; }
+.dash-page .nav-avatar { background: linear-gradient(135deg,#7c3aed,#06b6d4) !important; }
+.dash-page .btn-logout { color: #f87171 !important; border-color: rgba(248,113,113,0.3) !important; }
+.dash-page .btn-logout:hover { background: rgba(248,113,113,0.08) !important; }
+
+.dash-wrap {
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 90px 24px 60px;
+}
+
+/* HEADER */
+.dash-header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  margin-bottom: 36px; flex-wrap: wrap; gap: 16px;
+}
+.dash-label {
+  font-size: 11px; font-weight: 700; letter-spacing: 3px;
+  text-transform: uppercase; color: #7c3aed; margin-bottom: 8px;
+}
+.dash-title {
+  font-size: 32px; font-weight: 800; color: #f9fafb;
+  letter-spacing: -0.5px; margin-bottom: 8px; line-height: 1.2;
+}
+.dash-title span {
+  background: linear-gradient(135deg, #7c3aed, #06b6d4);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.dash-sub { font-size: 15px; color: #6b7280; }
+.new-session-btn {
+  background: linear-gradient(135deg,#7c3aed,#06b6d4);
+  color: #fff; border: none; border-radius: 10px;
+  padding: 10px 20px; font-size: 14px; font-weight: 700;
+  cursor: pointer; text-decoration: none; display: inline-flex;
+  align-items: center; gap: 6px; font-family: 'DM Sans', sans-serif;
+  transition: all .2s; align-self: flex-start; margin-top: 8px;
+}
+.new-session-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+
+/* STAT CARDS */
+.stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
+.stat-card {
+  background: #1a1a2e; border: 1px solid #2d2d44;
+  border-radius: 16px; padding: 22px 24px;
+  position: relative; overflow: hidden;
+}
+.stat-card::before {
+  content: ''; position: absolute; top: 0; left: 0;
+  width: 3px; height: 100%; border-radius: 0 2px 2px 0;
+}
+.stat-card.purple::before { background: #a78bfa; }
+.stat-card.blue::before   { background: #06b6d4; }
+.stat-card.teal::before   { background: #34d399; }
+.stat-card.amber::before  { background: #fbbf24; }
+.stat-icon {
+  font-size: 20px; margin-bottom: 14px; display: inline-block;
+  padding: 8px; border-radius: 10px;
+}
+.stat-card.purple .stat-icon { background: rgba(167,139,250,0.12); }
+.stat-card.blue   .stat-icon { background: rgba(6,182,212,0.10); }
+.stat-card.teal   .stat-icon { background: rgba(52,211,153,0.10); }
+.stat-card.amber  .stat-icon { background: rgba(251,191,36,0.10); }
+.stat-label { font-size: 11px; font-weight: 700; color: #4b5563; text-transform: uppercase; letter-spacing: .07em; margin-bottom: 8px; }
+.stat-value { font-size: 34px; font-weight: 800; color: #f9fafb; line-height: 1; }
+.stat-delta { font-size: 12px; margin-top: 8px; }
+.delta-up   { color: #34d399; }
+.delta-down { color: #f87171; }
+.delta-flat { color: #6b7280; }
+
+/* RECOMMENDED */
+.recommend-card {
+  background: #1a1a2e; border: 1px solid rgba(124,58,237,0.25);
+  border-radius: 16px; padding: 20px 24px;
+  display: flex; align-items: center; gap: 16px; margin-bottom: 20px;
+  position: relative; overflow: hidden;
+}
+.recommend-card::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(circle at 0% 50%, rgba(124,58,237,0.08) 0%, transparent 60%);
+  pointer-events: none;
+}
+.recommend-icon { font-size: 32px; flex-shrink: 0; }
+.recommend-label { font-size: 11px; font-weight: 700; color: #a78bfa; text-transform: uppercase; letter-spacing: .07em; margin-bottom: 4px; }
+.recommend-text { font-size: 15px; font-weight: 700; color: #f9fafb; }
+.recommend-sub { font-size: 12px; color: #6b7280; margin-top: 3px; }
+
+/* MAIN GRID */
+.main-grid { display: grid; grid-template-columns: 1fr 320px; gap: 16px; margin-bottom: 16px; }
+
+.chart-card {
+  background: #1a1a2e; border: 1px solid #2d2d44;
+  border-radius: 16px; padding: 24px;
+}
+.card-title {
+  font-size: 14px; font-weight: 700; color: #f9fafb;
+  margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between;
+}
+.card-badge {
+  font-size: 11px; font-weight: 600; padding: 3px 10px;
+  border-radius: 20px; background: #23232f; color: #6b7280;
+  border: 1px solid #2d2d44;
+}
+canvas { width: 100% !important; }
+
+/* STREAK CARD */
+.streak-card {
+  background: #1a1a2e; border: 1px solid #2d2d44;
+  border-radius: 16px; padding: 24px;
+}
+.streak-big {
+  font-size: 52px; font-weight: 800; line-height: 1;
+  background: linear-gradient(135deg, #fbbf24, #f97316);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.streak-sub { font-size: 13px; color: #6b7280; margin-top: 4px; margin-bottom: 20px; }
+.week-dots { display: flex; gap: 6px; }
+.week-dot { flex: 1; text-align: center; }
+.week-dot-circle {
+  width: 28px; height: 28px; border-radius: 50%;
+  margin: 0 auto 4px; border: 1.5px solid #2d2d44;
+}
+.week-dot-circle.filled { background: #fbbf24; border-color: #fbbf24; }
+.week-dot-circle.today  { background: #a78bfa; border-color: #a78bfa; }
+.week-dot-label { font-size: 10px; color: #6b7280; font-weight: 600; }
+
+/* SECONDARY GRID */
+.sec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+
+/* AI FEEDBACK */
+.ai-card {
+  background: #1a1a2e; border: 1px solid #2d2d44;
+  border-radius: 16px; padding: 20px;
+}
+.ai-card.strength { border-left: 3px solid #34d399; }
+.ai-card.improve  { border-left: 3px solid #a78bfa; }
+.ai-card-icon { font-size: 22px; margin-bottom: 8px; }
+.ai-card-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; margin-bottom: 6px; }
+.ai-card.strength .ai-card-label { color: #34d399; }
+.ai-card.improve  .ai-card-label { color: #a78bfa; }
+.ai-card-text { font-size: 13px; color: #9ca3af; line-height: 1.6; }
+
+/* TOPIC BARS */
+.topic-bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.topic-name { font-size: 12px; color: #9ca3af; width: 130px; flex-shrink: 0; }
+.topic-bar-bg { flex: 1; background: #23232f; border-radius: 4px; height: 8px; }
+.topic-bar-fill { height: 8px; border-radius: 4px; background: linear-gradient(90deg,#7c3aed,#06b6d4); }
+.topic-score { font-size: 12px; color: #6b7280; width: 36px; text-align: right; }
+
+/* SESSIONS TABLE */
+.sessions-card {
+  background: #1a1a2e; border: 1px solid #2d2d44;
+  border-radius: 16px; padding: 24px; margin-bottom: 16px;
+}
+.sessions-table { width: 100%; border-collapse: collapse; margin-top: 4px; }
+.sessions-table th {
+  font-size: 11px; font-weight: 700; color: #4b5563;
+  text-transform: uppercase; letter-spacing: .07em;
+  text-align: left; padding: 8px 12px;
+  border-bottom: 1px solid #2d2d44;
+}
+.sessions-table td { padding: 13px 12px; border-bottom: 1px solid #1a1a2e; font-size: 13px; color: #9ca3af; }
+.sessions-table tr:last-child td { border-bottom: none; }
+.sessions-table tr:hover td { background: #1f1f2e; }
+.role-name { color: #f9fafb; font-weight: 600; }
+.score-pill {
+  display: inline-block; padding: 3px 10px;
+  border-radius: 20px; font-size: 12px; font-weight: 700;
+}
+.score-high { background: #064e3b; color: #34d399; }
+.score-mid  { background: #451a03; color: #fbbf24; }
+.score-low  { background: #4c0519; color: #f87171; }
+.review-btn {
+  background: #23232f; border: 1px solid #2d2d44;
+  color: #9ca3af; border-radius: 8px; padding: 5px 12px;
+  font-size: 12px; font-weight: 600; cursor: pointer;
+  text-decoration: none; transition: all .15s; font-family: 'DM Sans';
+}
+.review-btn:hover { border-color: #a78bfa; color: #c4b5fd; }
+.empty-state { text-align: center; padding: 3rem; color: #4b5563; }
+.empty-state .empty-icon { font-size: 40px; margin-bottom: 12px; }
+.empty-state p { font-size: 14px; }
+
+@media (max-width: 900px) {
+  .stat-grid { grid-template-columns: repeat(2, 1fr); }
+  .main-grid { grid-template-columns: 1fr; }
+  .sec-grid  { grid-template-columns: 1fr; }
+}
+</style>
+{% endblock extra_css %}
+
+{% block body %}
+<div class="dash-page">
+<nav class="app-nav">
+  <a href="{% url 'landing' %}" class="logo">PrepAI</a>
+  <div class="nav-right">
+    <a href="{% url 'home' %}" class="nav-link">Home</a>
+    <a href="{% url 'practice' %}" class="nav-link">Practice</a>
+    <a href="{% url 'dashboard' %}" class="nav-link active">Dashboard</a>
+    <a href="{% url 'video_setup' %}" class="nav-link">🎥 Video</a>
+    <a href="{% url 'leaderboard' %}" class="nav-link">🏆</a>
+    <div class="nav-avatar">{{ request.user.username|first|upper }}</div>
+    <a href="{% url 'logout' %}" class="btn-logout">Logout</a>
+  </div>
+</nav>
+
+<div class="dash-wrap">
+
+  <!-- Header -->
+  <div class="dash-header">
+    <div>
+      <div class="dash-label">Dashboard</div>
+      <h1 class="dash-title">Your <span>Progress</span></h1>
+      <p class="dash-sub">Welcome back, {{ request.user.username }} — here's how you're doing.</p>
+    </div>
+    <a href="{% url 'home' %}" class="new-session-btn">+ New Session</a>
+  </div>
+
+  <!-- STAT CARDS -->
+  <div class="stat-grid">
+    <div class="stat-card purple">
+      <div class="stat-icon">📋</div>
+      <div class="stat-label">Total Sessions</div>
+      <div class="stat-value">{{ total_sessions }}</div>
+      <div class="stat-delta delta-up">↑ Keep going!</div>
+    </div>
+    <div class="stat-card blue">
+      <div class="stat-icon">💬</div>
+      <div class="stat-label">Total Answers</div>
+      <div class="stat-value">{{ total_answers }}</div>
+      <div class="stat-delta delta-flat">All time</div>
+    </div>
+    <div class="stat-card teal">
+      <div class="stat-icon">⭐</div>
+      <div class="stat-label">Avg Score</div>
+      <div class="stat-value">{{ avg_score }}<span style="font-size:16px;color:#4b5563;">/10</span></div>
+      <div class="stat-delta {% if avg_score >= 7 %}delta-up{% elif avg_score >= 5 %}delta-flat{% else %}delta-down{% endif %}">
+        {% if avg_score >= 7 %}↑ Great{% elif avg_score >= 5 %}→ Average{% else %}↓ Needs work{% endif %}
+      </div>
+    </div>
+    <div class="stat-card amber">
+      <div class="stat-icon">🏆</div>
+      <div class="stat-label">Best Score</div>
+      <div class="stat-value">{{ best_score }}<span style="font-size:16px;color:#4b5563;">/10</span></div>
+      <div class="stat-delta delta-up">Personal best</div>
+    </div>
+  </div>
+
+  <!-- Recommended -->
+  <div class="recommend-card">
+    <div class="recommend-icon">🎯</div>
+    <div style="flex:1;">
+      <div class="recommend-label">Recommended Next</div>
+      <div class="recommend-text">
+        {% if avg_score >= 8 %}Senior Software Engineer Interview{% elif avg_score >= 6 %}Mid-level Developer Interview{% else %}Junior Developer Interview{% endif %}
+      </div>
+      <div class="recommend-sub">Based on your average score of {{ avg_score }}/10</div>
+    </div>
+    <a href="{% url 'practice' %}" class="new-session-btn">Practice →</a>
+  </div>
+
+  <!-- Chart + Streak -->
+  <div class="main-grid">
+    <div class="chart-card">
+      <div class="card-title">Score Trend <span class="card-badge">Last 10 sessions</span></div>
+      <canvas id="scoreChart" height="200"></canvas>
+    </div>
+    <div class="streak-card">
+      <div class="card-title">Practice Streak</div>
+      <div class="streak-big">{{ streak }}🔥</div>
+      <div class="streak-sub">day streak · best: {{ best_streak }} days</div>
+      <div class="week-dots" id="week-dots"></div>
+    </div>
+  </div>
+
+  <!-- AI Feedback + Topics -->
+  <div class="sec-grid">
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div class="ai-card strength">
+        <div class="ai-card-icon">💪</div>
+        <div class="ai-card-label">Strength</div>
+        <div class="ai-card-text">
+          {% if avg_score >= 7 %}You're consistently delivering strong, structured answers. Keep leveraging your technical depth.
+          {% elif avg_score >= 5 %}You show good understanding of core concepts. Your answers are on the right track.
+          {% else %}You're engaging with practice regularly. That consistency is the foundation of improvement.{% endif %}
+        </div>
+      </div>
+      <div class="ai-card improve">
+        <div class="ai-card-icon">📈</div>
+        <div class="ai-card-label">Improvement Area</div>
+        <div class="ai-card-text">
+          {% if avg_score >= 7 %}Focus on more complex system design and behavioural questions to push your score to 9-10.
+          {% elif avg_score >= 5 %}Work on adding concrete examples and STAR-method structure to your answers.
+          {% else %}Try answering questions out loud and aim for at least 3 complete sentences per answer.{% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="card-title">Topic Coverage</div>
+      <div id="topic-bars"></div>
+    </div>
+  </div>
+
+  <!-- Sessions Table -->
+  <div class="sessions-card">
+    <div class="card-title">Recent Sessions <span class="card-badge">{{ total_sessions }} total</span></div>
+    {% if sessions %}
+    <table class="sessions-table">
+      <thead>
+        <tr>
+          <th>Role</th><th>Date</th><th>Questions</th><th>Avg Score</th><th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in sessions %}
+        {% with s_attempts=s.attempts.all %}
+        {% if s_attempts %}
+          <tr>
+            <td class="role-name">{{ s.detected_role|default:"Interview Session" }}</td>
+            <td>{{ s.created_at|date:"M d, Y" }}</td>
+            <td>{{ s.questions.count }}</td>
+            <td><span class="score-pill score-mid">—</span></td>
+            <td><a href="{% url 'final_report' s.id %}" class="review-btn">Review →</a></td>
+          </tr>
+        {% else %}
+          <tr>
+            <td class="role-name">{{ s.detected_role|default:"Interview Session" }}</td>
+            <td>{{ s.created_at|date:"M d, Y" }}</td>
+            <td>{{ s.questions.count }}</td>
+            <td><span class="score-pill" style="background:#23232f;color:#6b7280;">No answers</span></td>
+            <td><a href="{% url 'interview' s.id %}" class="review-btn">Continue →</a></td>
+          </tr>
+        {% endif %}
+        {% endwith %}
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">🎯</div>
+      <p>No sessions yet. <a href="{% url 'home' %}" style="color:#a78bfa;">Start your first interview!</a></p>
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const chartData = {{ chart_data|safe }};
+if (chartData.length > 0) {
+  const ctx = document.getElementById('scoreChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: chartData.map(d => d.date),
+      datasets: [{
+        label: 'Avg Score', data: chartData.map(d => d.score),
+        borderColor: '#a78bfa', backgroundColor: 'rgba(167,139,250,0.08)',
+        borderWidth: 2.5, pointBackgroundColor: '#a78bfa', pointRadius: 4,
+        tension: 0.4, fill: true,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#1a1a2e', borderColor: '#2d2d44', borderWidth: 1,
+          titleColor: '#f9fafb', bodyColor: '#9ca3af',
+          callbacks: { label: ctx => ` Score: ${ctx.parsed.y}/10` }
+        }
+      },
+      scales: {
+        x: { grid: { color: '#1f1f2e' }, ticks: { color: '#4b5563', font: { size: 11 } } },
+        y: { min: 0, max: 10, grid: { color: '#1f1f2e' }, ticks: { color: '#4b5563', font: { size: 11 }, stepSize: 2 } }
+      }
+    }
+  });
+} else {
+  document.getElementById('scoreChart').insertAdjacentHTML('afterend',
+    '<div style="text-align:center;padding:3rem;color:#4b5563;font-size:13px;">Complete sessions to see your trend</div>');
+  document.getElementById('scoreChart').style.display = 'none';
+}
+
+const days = ['M','T','W','T','F','S','S'];
+const today = new Date().getDay();
+const todayIdx = today === 0 ? 6 : today - 1;
+const dotsEl = document.getElementById('week-dots');
+days.forEach((d, i) => {
+  const filled = i < todayIdx, isToday = i === todayIdx;
+  dotsEl.innerHTML += `<div class="week-dot"><div class="week-dot-circle ${isToday?'today':filled?'filled':''}"></div><div class="week-dot-label">${d}</div></div>`;
+});
+
+const avgScore = {{ avg_score }};
+const topics = [
+  { name:'DSA & Algorithms',  score: Math.min(10, Math.max(1, +(avgScore + (Math.random()*2-1)).toFixed(1))) },
+  { name:'System Design',     score: Math.min(10, Math.max(1, +(avgScore - 0.5 + Math.random()).toFixed(1))) },
+  { name:'Web Development',   score: Math.min(10, Math.max(1, +(avgScore + 0.3).toFixed(1))) },
+  { name:'Behavioural',       score: Math.min(10, Math.max(1, +(avgScore + 1).toFixed(1))) },
+  { name:'Database & SQL',    score: Math.min(10, Math.max(1, +(avgScore - 0.8).toFixed(1))) },
+];
+const barsEl = document.getElementById('topic-bars');
+topics.forEach(t => {
+  barsEl.innerHTML += `<div class="topic-bar-row"><div class="topic-name">${t.name}</div><div class="topic-bar-bg"><div class="topic-bar-fill" style="width:${t.score*10}%"></div></div><div class="topic-score">${t.score}</div></div>`;
+});
+</script>
+{% endblock body %}

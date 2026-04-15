@@ -1,0 +1,415 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PrepAI — Ace Your Next Interview</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --purple: #7c3aed;
+      --purple-light: #a78bfa;
+      --teal: #06b6d4;
+      --green: #34d399;
+      --red: #f87171;
+      --bg: #0a0a0f;
+      --surface: #1a1a2e;
+      --surface2: #23232f;
+      --border: #2d2d44;
+      --text: #f9fafb;
+      --muted: #6b7280;
+      --muted2: #9ca3af;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background:
+        radial-gradient(ellipse 800px 600px at 0% 0%,   rgba(124,58,237,0.08) 0%, transparent 70%),
+        radial-gradient(ellipse 600px 500px at 100% 10%, rgba(6,182,212,0.06) 0%, transparent 65%),
+        radial-gradient(ellipse 500px 400px at 50% 100%, rgba(52,211,153,0.04) 0%, transparent 70%);
+    }
+
+    /* NAV */
+    nav {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 1.1rem 6%;
+      background: rgba(10,10,15,0.92);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .logo {
+      font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 800;
+      background: linear-gradient(135deg, #a78bfa, #06b6d4);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      text-decoration: none; letter-spacing: -0.5px;
+    }
+    .nav-right { display: flex; gap: 0.6rem; align-items: center; }
+    .nav-link {
+      font-size: 0.9rem; font-weight: 500; color: var(--muted2);
+      text-decoration: none; padding: 7px 16px; border-radius: 999px; transition: all 0.2s;
+    }
+    .nav-link:hover { color: #a78bfa; background: rgba(124,58,237,0.10); }
+    .btn-nav {
+      background: linear-gradient(135deg, #7c3aed, #06b6d4);
+      color: white; font-size: 0.88rem; font-weight: 700;
+      padding: 0.5rem 1.4rem; border-radius: 50px; text-decoration: none;
+      transition: all 0.2s; box-shadow: 0 4px 16px rgba(124,58,237,0.35);
+    }
+    .btn-nav:hover { filter: brightness(1.1); transform: translateY(-1px); }
+
+    /* HERO */
+    .hero {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;
+      align-items: center; padding: 5rem 6% 4rem;
+      max-width: 1200px; margin: 0 auto; position: relative; z-index: 1;
+    }
+    .hero-left { animation: fadeUp 0.6s ease both; }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
+
+    .badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(52,211,153,0.10); color: var(--green);
+      border: 1px solid rgba(52,211,153,0.25);
+      font-size: 0.78rem; font-weight: 700; padding: 0.35rem 0.9rem;
+      border-radius: 50px; margin-bottom: 1.5rem; letter-spacing: 0.5px;
+    }
+    .badge-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.3)} }
+
+    h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(2.4rem, 4vw, 3.4rem); font-weight: 800;
+      line-height: 1.1; letter-spacing: -1.5px; color: var(--text); margin-bottom: 1.2rem;
+    }
+    h1 span {
+      background: linear-gradient(135deg, #a78bfa, #06b6d4);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle { font-size: 1.05rem; color: var(--muted2); line-height: 1.7; max-width: 420px; margin-bottom: 2rem; }
+
+    .hero-btns { display: flex; gap: 0.8rem; flex-wrap: wrap; margin-bottom: 2.5rem; }
+    .btn-primary {
+      background: linear-gradient(135deg, #7c3aed, #06b6d4);
+      color: white; font-size: 0.95rem; font-weight: 700;
+      padding: 0.75rem 1.8rem; border-radius: 50px; text-decoration: none;
+      transition: all 0.2s; box-shadow: 0 4px 20px rgba(124,58,237,0.35);
+    }
+    .btn-primary:hover { filter: brightness(1.1); transform: translateY(-2px); }
+    .btn-secondary {
+      background: var(--surface); color: var(--muted2); font-size: 0.95rem; font-weight: 600;
+      padding: 0.75rem 1.8rem; border-radius: 50px; text-decoration: none;
+      border: 1px solid var(--border); transition: all 0.2s;
+    }
+    .btn-secondary:hover { border-color: #a78bfa; color: #a78bfa; transform: translateY(-2px); }
+
+    .stats { display: flex; gap: 2rem; }
+    .stat-num { font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 800; color: var(--text); display: block; }
+    .stat-label { font-size: 0.8rem; color: var(--muted); }
+
+    /* HERO RIGHT */
+    .hero-right {
+      position: relative; display: flex; justify-content: center; align-items: center;
+      animation: fadeUp 0.6s 0.2s ease both;
+    }
+    .scene { position: relative; width: 100%; max-width: 480px; }
+
+    .interview-card {
+      background: var(--surface); border-radius: 20px; border: 1px solid var(--border);
+      padding: 1.5rem; box-shadow: 0 20px 60px rgba(124,58,237,0.15);
+      position: relative; z-index: 2; animation: floatCard 4s ease-in-out infinite;
+    }
+    @keyframes floatCard { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+
+    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; }
+    .card-title { font-size: 0.8rem; font-weight: 600; color: var(--muted); }
+    .progress-pills { display: flex; gap: 4px; }
+    .pill { width: 22px; height: 6px; border-radius: 3px; background: var(--border); transition: background 0.3s; }
+    .pill.done { background: #a78bfa; }
+    .pill.active { background: var(--teal); animation: pillPulse 1s ease-in-out infinite; }
+    @keyframes pillPulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+    .question-box {
+      background: rgba(124,58,237,0.12); border: 1px solid rgba(124,58,237,0.2);
+      border-radius: 14px; padding: 1rem 1.1rem; margin-bottom: 1rem;
+    }
+    .q-label { font-size: 0.7rem; font-weight: 700; color: #a78bfa; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .q-text { font-size: 0.92rem; font-weight: 500; color: var(--text); line-height: 1.5; }
+
+    .typing-area {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 12px; padding: 0.8rem 1rem; min-height: 70px; margin-bottom: 1rem;
+    }
+    .typing-text { font-size: 0.85rem; color: var(--muted2); line-height: 1.6; }
+    .cursor {
+      display: inline-block; width: 2px; height: 14px;
+      background: #a78bfa; margin-left: 2px; vertical-align: middle;
+      animation: blink 1s step-end infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+    .submit-row { display: flex; justify-content: space-between; align-items: center; }
+    .mic-btn {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: rgba(124,58,237,0.15); display: flex; align-items: center; justify-content: center;
+      animation: micPulse 2s ease-in-out infinite;
+    }
+    @keyframes micPulse { 0%,100%{box-shadow:0 0 0 0 rgba(124,58,237,0.35)} 50%{box-shadow:0 0 0 8px rgba(124,58,237,0)} }
+    .submit-btn {
+      background: linear-gradient(135deg, #7c3aed, #06b6d4);
+      color: white; font-size: 0.8rem; font-weight: 700;
+      padding: 0.5rem 1.2rem; border-radius: 50px;
+    }
+
+    .feedback-card {
+      position: absolute; bottom: -20px; right: -30px;
+      background: var(--surface); border-radius: 16px; border: 1px solid var(--border);
+      padding: 0.9rem 1.1rem; width: 200px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+      z-index: 3; animation: floatFeedback 4s 1s ease-in-out infinite;
+    }
+    @keyframes floatFeedback { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+    .fb-score { font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 800; color: var(--green); margin-bottom: 2px; }
+    .fb-label { font-size: 0.72rem; color: var(--muted); margin-bottom: 6px; }
+    .fb-bar { height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
+    .fb-fill { height: 100%; background: var(--green); border-radius: 3px; animation: fillBar 2s 1s ease both; }
+    @keyframes fillBar { from{width:0} to{width:82%} }
+    .fb-tag {
+      display: inline-block; background: rgba(52,211,153,0.12); color: var(--green);
+      border: 1px solid rgba(52,211,153,0.25);
+      font-size: 0.68rem; font-weight: 700; padding: 2px 8px; border-radius: 20px; margin-top: 6px;
+    }
+
+    .role-tag {
+      position: absolute; top: -18px; left: -20px;
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+      padding: 0.6rem 1rem; display: flex; align-items: center; gap: 8px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      z-index: 3; animation: floatTag 3.5s 0.5s ease-in-out infinite;
+    }
+    @keyframes floatTag { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+    .role-avatar {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: linear-gradient(135deg, #7c3aed, #06b6d4);
+      color: white; font-size: 0.7rem; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .role-name { font-size: 0.78rem; font-weight: 600; color: var(--text); }
+    .role-sub { font-size: 0.68rem; color: var(--muted); }
+
+    /* FEATURES */
+    .features { padding: 4rem 6%; max-width: 1200px; margin: 0 auto; position: relative; z-index: 1; }
+    .section-label { font-size: 0.75rem; font-weight: 700; color: #a78bfa; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 0.5rem; }
+    .section-title { font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 3rem; color: var(--text); }
+
+    .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem; }
+    .feature-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 1.5rem;
+      transition: all 0.2s;
+    }
+    .feature-card:hover { transform: translateY(-4px); border-color: rgba(124,58,237,0.3); box-shadow: 0 12px 40px rgba(124,58,237,0.12); }
+    .feat-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; margin-bottom: 1rem; }
+    .feat-title { font-size: 1rem; font-weight: 700; margin-bottom: 0.4rem; color: var(--text); }
+    .feat-desc { font-size: 0.85rem; color: var(--muted2); line-height: 1.6; }
+
+    /* HOW */
+    .how { padding: 4rem 6%; background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); position: relative; z-index: 1; }
+    .how-inner { max-width: 1200px; margin: 0 auto; }
+    .steps { display: grid; grid-template-columns: repeat(3,1fr); gap: 2rem; }
+    .step { display: flex; gap: 1rem; align-items: flex-start; }
+    .step-num {
+      width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+      background: linear-gradient(135deg, #7c3aed, #06b6d4);
+      color: white; font-size: 0.9rem; font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .step-title { font-size: 1rem; font-weight: 700; margin-bottom: 0.3rem; color: var(--text); }
+    .step-desc { font-size: 0.85rem; color: var(--muted2); line-height: 1.6; }
+
+    /* CTA */
+    .cta-section { padding: 5rem 6%; text-align: center; position: relative; z-index: 1; }
+    .cta-inner { max-width: 600px; margin: 0 auto; }
+    .cta-title { font-family: 'Syne', sans-serif; font-size: 2.4rem; font-weight: 800; letter-spacing: -1px; margin-bottom: 1rem; color: var(--text); }
+    .cta-title span { background: linear-gradient(135deg, #a78bfa, #06b6d4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .cta-sub { font-size: 1rem; color: var(--muted2); margin-bottom: 2rem; line-height: 1.6; }
+    .cta-btns { display: flex; gap: 0.8rem; justify-content: center; }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid var(--border); padding: 1.5rem 6%;
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 0.82rem; color: var(--muted);
+      position: relative; z-index: 1;
+    }
+    footer a { color: var(--muted); text-decoration: none; transition: color 0.2s; }
+    footer a:hover { color: #a78bfa; }
+
+    ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 999px; }
+    ::selection { background: rgba(124,58,237,0.3); color: #f9fafb; }
+
+    @media (max-width: 768px) {
+      .hero { grid-template-columns: 1fr; padding: 3rem 5%; }
+      .hero-right { display: none; }
+      .features-grid { grid-template-columns: 1fr; }
+      .steps { grid-template-columns: 1fr; }
+      .cta-btns { flex-direction: column; align-items: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="/" class="logo">PrepAI</a>
+    <div class="nav-right">
+      <a href="/login/" class="nav-link">Login</a>
+      <a href="/register/" class="btn-nav">Get Started →</a>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-left">
+      <div class="badge"><span class="badge-dot"></span>AI-Powered Interview Coach</div>
+      <h1>Land your<br/><span>dream job</span><br/>with confidence.</h1>
+      <p class="subtitle">Paste any job description and get 8 tailored interview questions with instant AI feedback on every answer — completely free.</p>
+      <div class="hero-btns">
+        <a href="/register/" class="btn-primary">Start Practicing Free →</a>
+        <a href="/login/" class="btn-secondary">Sign In</a>
+      </div>
+      <div class="stats">
+        <div><span class="stat-num">8</span><span class="stat-label">Questions per session</span></div>
+        <div><span class="stat-num">~10s</span><span class="stat-label">To analyze JD</span></div>
+        <div><span class="stat-num">Free</span><span class="stat-label">No credit card</span></div>
+      </div>
+    </div>
+
+    <div class="hero-right">
+      <div class="scene">
+        <div class="role-tag">
+          <div class="role-avatar">JD</div>
+          <div><div class="role-name">Junior Developer</div><div class="role-sub">Interview in progress</div></div>
+        </div>
+        <div class="interview-card">
+          <div class="card-header">
+            <span class="card-title">Question 3 of 8</span>
+            <div class="progress-pills">
+              <div class="pill done"></div><div class="pill done"></div>
+              <div class="pill active"></div><div class="pill"></div>
+              <div class="pill"></div><div class="pill"></div>
+              <div class="pill"></div><div class="pill"></div>
+            </div>
+          </div>
+          <div class="question-box">
+            <div class="q-label">Technical</div>
+            <div class="q-text" id="qText">Explain the difference between REST and GraphQL APIs.</div>
+          </div>
+          <div class="typing-area">
+            <div class="typing-text"><span id="typedAnswer"></span><span class="cursor"></span></div>
+          </div>
+          <div class="submit-row">
+            <div class="mic-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.5" stroke-linecap="round">
+                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                <line x1="12" y1="19" x2="12" y2="23"/>
+                <line x1="8" y1="23" x2="16" y2="23"/>
+              </svg>
+            </div>
+            <div class="submit-btn">Submit Answer</div>
+          </div>
+        </div>
+        <div class="feedback-card">
+          <div class="fb-score">8.5 / 10</div>
+          <div class="fb-label">Score for Q2</div>
+          <div class="fb-bar"><div class="fb-fill"></div></div>
+          <div class="fb-tag">Great answer!</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="features">
+    <div class="section-label">Why PrepAI</div>
+    <div class="section-title">Everything you need to prep.</div>
+    <div class="features-grid">
+      <div class="feature-card"><div class="feat-icon" style="background:rgba(124,58,237,0.15);">🎯</div><div class="feat-title">JD-Tailored Questions</div><div class="feat-desc">Paste any job description and get 8 hyper-relevant questions specific to that role and company.</div></div>
+      <div class="feature-card"><div class="feat-icon" style="background:rgba(6,182,212,0.12);">⚡</div><div class="feat-title">Instant AI Feedback</div><div class="feat-desc">Get a score, detailed feedback, and specific improvement tips for every answer in seconds.</div></div>
+      <div class="feature-card"><div class="feat-icon" style="background:rgba(52,211,153,0.12);">📊</div><div class="feat-title">Track Your Progress</div><div class="feat-desc">See your scores improve over time with a personal dashboard showing every session.</div></div>
+      <div class="feature-card"><div class="feat-icon" style="background:rgba(251,191,36,0.12);">🎙️</div><div class="feat-title">Voice Input</div><div class="feat-desc">Answer questions by speaking — just like a real interview. Practice your verbal communication.</div></div>
+      <div class="feature-card"><div class="feat-icon" style="background:rgba(6,182,212,0.10);">🧠</div><div class="feat-title">Practice Hub</div><div class="feat-desc">Pick a domain — DSA, System Design, ML, HR — and generate 8 focused practice questions anytime.</div></div>
+      <div class="feature-card"><div class="feat-icon" style="background:rgba(52,211,153,0.10);">🆓</div><div class="feat-title">Completely Free</div><div class="feat-desc">No credit card, no trial limits. Powered by Groq AI — fast, free, and unlimited sessions.</div></div>
+    </div>
+  </section>
+
+  <section class="how">
+    <div class="how-inner">
+      <div class="section-label">How It Works</div>
+      <div class="section-title">3 steps to interview-ready.</div>
+      <div class="steps">
+        <div class="step"><div class="step-num">1</div><div><div class="step-title">Paste the Job Description</div><div class="step-desc">Copy any JD from LinkedIn, Naukri, or any job portal and paste it into PrepAI.</div></div></div>
+        <div class="step"><div class="step-num">2</div><div><div class="step-title">Answer AI Questions</div><div class="step-desc">Our AI generates 8 tailored questions. Answer by typing or speaking — just like a real interview.</div></div></div>
+        <div class="step"><div class="step-num">3</div><div><div class="step-title">Get Your Report</div><div class="step-desc">See your scores, detailed feedback, and what to improve — all in one comprehensive report.</div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-section">
+    <div class="cta-inner">
+      <div class="cta-title">Ready to <span>ace</span> your next interview?</div>
+      <p class="cta-sub">Join thousands of candidates who prep smarter with AI. It's free, fast, and actually works.</p>
+      <div class="cta-btns">
+        <a href="/register/" class="btn-primary">Start Practicing Free →</a>
+        <a href="/login/" class="btn-secondary">I have an account</a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>© 2026 PrepAI. All rights reserved.</span>
+    <div style="display:flex;gap:1.5rem;">
+      <a href="#">Privacy</a><a href="#">Terms</a>
+      <a href="/login/">Login</a><a href="/register/">Register</a>
+    </div>
+  </footer>
+
+  <script>
+    const answers = [
+      "REST uses fixed endpoints and returns full data, while GraphQL lets clients request exactly what they need...",
+      "I would start by identifying the core requirements and then design the system with scalability in mind...",
+      "A linked list is a linear data structure where each node contains data and a pointer to the next node..."
+    ];
+    const questions = [
+      "Explain the difference between REST and GraphQL APIs.",
+      "How would you approach designing a scalable notification system?",
+      "What is a linked list and when would you use it over an array?"
+    ];
+    let ansIdx = 0, charIdx = 0, isDeleting = false;
+    function typeAnswer() {
+      const current = answers[ansIdx];
+      const el = document.getElementById('typedAnswer');
+      const qEl = document.getElementById('qText');
+      if (!isDeleting) {
+        el.textContent = current.substring(0, charIdx + 1); charIdx++;
+        if (charIdx === current.length) { isDeleting = true; setTimeout(typeAnswer, 2000); return; }
+      } else {
+        el.textContent = current.substring(0, charIdx - 1); charIdx--;
+        if (charIdx === 0) { isDeleting = false; ansIdx = (ansIdx + 1) % answers.length; qEl.textContent = questions[ansIdx]; }
+      }
+      setTimeout(typeAnswer, isDeleting ? 18 : 45);
+    }
+    typeAnswer();
+  </script>
+</body>
+</html>

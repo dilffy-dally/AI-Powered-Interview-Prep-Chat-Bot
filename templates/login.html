@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}Login — PrepAI{% endblock %}
+{% block body %}
+<nav>
+  <a href="{% url 'landing' %}" class="logo">PrepAI</a>
+</nav>
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-title">Welcome back 👋</div>
+    <div class="auth-sub">Sign in to continue your prep journey</div>
+
+    {% if error %}
+    <div class="error-msg">⚠️ {{ error }}</div>
+    {% endif %}
+
+    <form method="POST">
+      {% csrf_token %}
+      <label>Username</label>
+      <input type="text" name="username" placeholder="your_username" autocomplete="username" required>
+      <label>Password</label>
+      <input type="password" name="password" placeholder="••••••••" autocomplete="current-password" required>
+      <button type="submit" class="btn-submit">Sign In →</button>
+    </form>
+
+    <div class="auth-link">
+      Don't have an account? <a href="{% url 'register' %}">Create one free</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

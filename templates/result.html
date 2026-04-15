@@ -1,0 +1,560 @@
+{% extends 'base.html' %}
+{% block title %}Report — PrepAI{% endblock %}
+{% block extra_css %}
+<style>
+.result-wrap { max-width:860px; margin:0 auto; padding:40px 24px 100px; }
+
+.score-hero {
+  text-align:center; padding:52px 36px;
+  background:rgba(255,255,255,0.80); border:1.5px solid var(--border);
+  border-radius:28px; backdrop-filter:blur(20px);
+  margin-bottom:28px; position:relative; overflow:hidden;
+  box-shadow:0 4px 32px rgba(124,111,255,0.09);
+}
+.score-hero::before {
+  content:''; position:absolute; inset:0;
+  background:radial-gradient(circle at 50% 0%, rgba(124,111,255,0.08) 0%, transparent 65%);
+}
+.score-role { color:var(--muted); font-size:14px; margin-bottom:6px; }
+.score-title { font-family:'Syne',sans-serif; font-size:26px; font-weight:800; margin-bottom:36px; color:var(--text); }
+
+.gauge-wrap { position:relative; width:170px; height:170px; margin:0 auto 22px; }
+.gauge-svg { width:170px; height:170px; transform:rotate(-90deg); }
+.gauge-bg { fill:none; stroke:rgba(124,111,255,0.10); stroke-width:12; }
+.gauge-fill { fill:none; stroke-width:12; stroke-linecap:round; transition:stroke-dashoffset 1.5s ease; }
+.gauge-text {
+  position:absolute; inset:0; display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+}
+.gauge-num { font-family:'Syne',sans-serif; font-size:46px; font-weight:800; line-height:1; }
+.gauge-denom { color:var(--muted); font-size:17px; }
+.score-verdict { font-family:'Syne',sans-serif; font-size:20px; font-weight:700; margin-bottom:8px; color:var(--text); }
+.score-summary { color:var(--muted); font-size:15px; max-width:440px; margin:0 auto; }
+
+.stats-row { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:28px; }
+.stat-card {
+  background:rgba(255,255,255,0.78); border:1.5px solid var(--border);
+  border-radius:20px; padding:22px; text-align:center; backdrop-filter:blur(20px);
+  box-shadow:0 2px 12px rgba(124,111,255,0.06);
+}
+.stat-val { font-family:'Syne',sans-serif; font-size:30px; font-weight:800; }
+.stat-label { color:var(--muted); font-size:13px; margin-top:4px; }
+
+/* ── Skill Radar Chart ── */
+.radar-card {
+  background:rgba(255,255,255,0.80); border:1.5px solid var(--border);
+  border-radius:24px; padding:32px; margin-bottom:28px;
+  backdrop-filter:blur(20px); box-shadow:0 4px 20px rgba(124,111,255,0.08);
+  text-align:center;
+}
+.radar-title {
+  font-family:'Syne',sans-serif; font-size:20px; font-weight:800;
+  margin-bottom:6px; color:var(--text);
+}
+.radar-subtitle { color:var(--muted); font-size:14px; margin-bottom:24px; }
+.radar-canvas-wrap { max-width:380px; margin:0 auto; }
+
+.section-head { font-family:'Syne',sans-serif; font-size:20px; font-weight:800; margin-bottom:18px; letter-spacing:-0.5px; color:var(--text); }
+.attempt-card {
+  background:rgba(255,255,255,0.78); border:1.5px solid var(--border);
+  border-radius:20px; padding:26px; margin-bottom:14px; backdrop-filter:blur(20px);
+  transition:all 0.2s; box-shadow:0 2px 12px rgba(124,111,255,0.05);
+}
+.attempt-card:hover { border-color:rgba(124,111,255,0.22); box-shadow:0 6px 22px rgba(124,111,255,0.10); }
+.attempt-head { display:flex; align-items:flex-start; gap:14px; margin-bottom:16px; }
+.attempt-score {
+  width:50px; height:50px; border-radius:13px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Syne',sans-serif; font-size:17px; font-weight:800;
+}
+.attempt-score.high { background:rgba(45,206,137,0.12); color:#1aaa70; border:1.5px solid rgba(45,206,137,0.22); }
+.attempt-score.mid { background:rgba(17,205,239,0.10); color:#0a8fa8; border:1.5px solid rgba(17,205,239,0.20); }
+.attempt-score.low { background:rgba(255,107,138,0.10); color:#d9405a; border:1.5px solid rgba(255,107,138,0.20); }
+.attempt-q { font-weight:600; font-size:15px; line-height:1.5; flex:1; color:var(--text); }
+
+.detail-section { margin-bottom:10px; }
+.detail-label { font-size:11px; font-weight:600; letter-spacing:2px; text-transform:uppercase; margin-bottom:4px; color:var(--muted); }
+.detail-body { font-size:14px; line-height:1.7; color:var(--muted); }
+.ans-body { font-style:italic; }
+
+/* ── Follow-up Section ── */
+.followup-section { margin-top:14px; }
+.btn-followup {
+  width:100%; padding:11px; border-radius:999px; cursor:pointer;
+  border:1.5px solid rgba(17,205,239,0.35);
+  background:rgba(17,205,239,0.06);
+  color:#0a8fa8; font-size:14px; font-weight:600;
+  font-family:'DM Sans',sans-serif; transition:all 0.3s;
+}
+.btn-followup:hover { background:rgba(17,205,239,0.12); border-color:rgba(17,205,239,0.55); }
+.btn-followup:disabled { opacity:0.5; cursor:not-allowed; }
+.followup-card {
+  display:none; margin-top:12px; animation:fadeIn 0.4s ease;
+  background:linear-gradient(135deg, rgba(17,205,239,0.05), rgba(124,111,255,0.05));
+  border:1.5px solid rgba(17,205,239,0.22); border-radius:16px; padding:18px;
+}
+.followup-card.visible { display:block; }
+.followup-label { font-size:11px; font-weight:600; letter-spacing:2px; text-transform:uppercase; color:#0a8fa8; margin-bottom:10px; }
+.followup-item {
+  display:flex; align-items:flex-start; gap:10px;
+  font-size:14px; color:var(--text); line-height:1.6; margin-bottom:8px;
+}
+.followup-num {
+  width:22px; height:22px; border-radius:50%; flex-shrink:0;
+  background:rgba(17,205,239,0.15); color:#0a8fa8;
+  display:flex; align-items:center; justify-content:center;
+  font-size:11px; font-weight:700; margin-top:2px;
+}
+
+/* ── Retry Section ── */
+.retry-section { margin-top:14px; }
+.btn-retry {
+  width:100%; padding:11px; border-radius:999px; cursor:pointer;
+  border:1.5px solid rgba(124,111,255,0.30);
+  background:rgba(124,111,255,0.06);
+  color:var(--c1); font-size:14px; font-weight:600;
+  font-family:'DM Sans',sans-serif; transition:all 0.3s;
+}
+.btn-retry:hover { background:rgba(124,111,255,0.12); border-color:rgba(124,111,255,0.55); }
+.retry-card { display:none; margin-top:12px; animation:fadeIn 0.4s ease; }
+.retry-card.visible { display:block; }
+.retry-textarea {
+  width:100%; min-height:110px; padding:14px;
+  background:rgba(255,255,255,0.9); border:1.5px solid rgba(124,111,255,0.18);
+  border-radius:14px; color:var(--text); font-size:14px;
+  font-family:'DM Sans',sans-serif; resize:vertical; outline:none;
+  line-height:1.7; box-sizing:border-box; margin-bottom:10px;
+}
+.retry-textarea:focus { border-color:var(--c1); box-shadow:0 0 0 3px rgba(124,111,255,0.10); }
+.btn-retry-submit {
+  width:100%; padding:12px; border-radius:999px;
+  background:linear-gradient(135deg, var(--c1), var(--c2));
+  border:none; color:#fff; font-size:14px; font-weight:700;
+  font-family:'Syne',sans-serif; cursor:pointer;
+  box-shadow:0 4px 16px rgba(124,111,255,0.30); transition:all 0.3s;
+}
+.btn-retry-submit:hover:not(:disabled) { transform:translateY(-2px); }
+.btn-retry-submit:disabled { opacity:0.5; cursor:not-allowed; }
+.retry-result {
+  display:none; margin-top:14px; border-radius:16px; padding:18px; animation:fadeIn 0.4s ease;
+}
+.retry-result.visible { display:block; }
+.retry-comparison {
+  display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px;
+}
+.retry-before, .retry-after {
+  border-radius:12px; padding:14px; text-align:center;
+}
+.retry-before { background:rgba(255,107,138,0.08); border:1.5px solid rgba(255,107,138,0.20); }
+.retry-after { background:rgba(45,206,137,0.08); border:1.5px solid rgba(45,206,137,0.20); }
+.retry-score-val { font-family:'Syne',sans-serif; font-size:26px; font-weight:800; }
+.retry-score-label { font-size:11px; color:var(--muted); margin-top:2px; }
+.retry-badge {
+  display:inline-block; padding:4px 14px; border-radius:999px;
+  font-size:12px; font-weight:700; margin-bottom:10px;
+}
+.retry-badge.improved { background:rgba(45,206,137,0.12); color:#1aaa70; border:1px solid rgba(45,206,137,0.25); }
+.retry-badge.same { background:rgba(255,193,7,0.12); color:#b8860b; border:1px solid rgba(255,193,7,0.25); }
+
+/* ── CTA Row ── */
+.cta-row { display:flex; gap:14px; flex-wrap:wrap; margin-top:36px; }
+.btn-cta {
+  flex:1; padding:14px; border-radius:999px; border:none;
+  font-size:15px; font-weight:700; font-family:'Syne',sans-serif;
+  cursor:pointer; text-decoration:none; text-align:center; transition:all 0.3s;
+  min-width:160px;
+}
+.btn-cta-primary { background:linear-gradient(135deg, var(--c1), var(--c2)); color:#fff; box-shadow:0 6px 22px rgba(124,111,255,0.35); }
+.btn-cta-primary:hover { transform:translateY(-2px); }
+.btn-cta-outline { background:rgba(255,255,255,0.8); border:1.5px solid var(--border); color:var(--text); }
+.btn-cta-outline:hover { border-color:var(--c1); color:var(--c1); }
+.btn-cta-pdf {
+  background:linear-gradient(135deg, #2DCE89, #20b577); color:#fff;
+  box-shadow:0 6px 22px rgba(45,206,137,0.30);
+}
+.btn-cta-pdf:hover { transform:translateY(-2px); }
+.btn-cta-share {
+  background:linear-gradient(135deg, #11CDEF, #0a8fa8); color:#fff;
+  box-shadow:0 6px 22px rgba(17,205,239,0.30);
+}
+.btn-cta-share:hover { transform:translateY(-2px); }
+
+/* ── Share Toast ── */
+.share-toast {
+  display:none; position:fixed; bottom:32px; left:50%; transform:translateX(-50%);
+  background:#1a1a2e; color:#fff; padding:14px 24px; border-radius:999px;
+  font-size:14px; font-weight:600; z-index:9999; animation:fadeIn 0.3s ease;
+  box-shadow:0 8px 30px rgba(0,0,0,0.25); gap:10px; align-items:center;
+}
+.share-toast.visible { display:flex; }
+.share-toast-link {
+  max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  font-size:12px; opacity:0.7;
+}
+
+@keyframes fadeIn { from{opacity:0;transform:translateY(10px) translateX(-50%)} to{opacity:1;transform:translateY(0) translateX(-50%)} }
+.mini-spinner { display:inline-block; width:14px; height:14px; border:2px solid rgba(255,255,255,0.3); border-top-color:#fff; border-radius:50%; animation:spin 0.7s linear infinite; vertical-align:middle; margin-right:6px; }
+@keyframes spin { to{transform:rotate(360deg)} }
+</style>
+{% endblock %}
+
+{% block body %}
+<nav class="app-nav">
+  <a href="{% url 'landing' %}" class="logo">PrepAI</a>
+  <div class="nav-right">
+    <a href="{% url 'home' %}" class="nav-link">Home</a>
+    <a href="{% url 'practice' %}" class="nav-link">Practice</a>
+    <a href="{% url 'dashboard' %}" class="nav-link">Dashboard</a>
+    <a href="{% url 'video_setup' %}" class="nav-link">🎥 Video</a>
+    <a href="{% url 'leaderboard' %}" class="nav-link">🏆 Leaderboard</a>
+    <a href="{% url 'logout' %}" class="btn-logout">Logout</a>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="result-wrap">
+
+    {% with score=report.overall_score %}
+    <div class="score-hero">
+      <div class="score-role">{{ session.detected_role }}</div>
+      <div class="score-title">Interview Complete 🎉</div>
+
+      <div class="gauge-wrap">
+        <svg class="gauge-svg" viewBox="0 0 170 170">
+          <circle class="gauge-bg" cx="85" cy="85" r="70"/>
+          <circle class="gauge-fill" cx="85" cy="85" r="70"
+            stroke="{% if score >= 7 %}#2DCE89{% elif score >= 5 %}#11CDEF{% else %}#FF6B8A{% endif %}"
+            stroke-dasharray="440"
+            stroke-dashoffset="440"
+            id="gaugeFill"
+          />
+        </svg>
+        <div class="gauge-text">
+          <div class="gauge-num" style="color:{% if score >= 7 %}#2DCE89{% elif score >= 5 %}#11CDEF{% else %}#FF6B8A{% endif %}">{{ score }}</div>
+          <div class="gauge-denom">/10</div>
+        </div>
+      </div>
+
+      <div class="score-verdict">
+        {% if score >= 8 %}🌟 Excellent Performance
+        {% elif score >= 6 %}👍 Good Job
+        {% elif score >= 4 %}📈 Room to Grow
+        {% else %}💪 Keep Practicing
+        {% endif %}
+      </div>
+      <div class="score-summary">{{ report.summary }}</div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-val" style="color:var(--c1)">{{ attempts|length }}</div>
+        <div class="stat-label">Questions Answered</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" style="color:{% if score >= 7 %}#2DCE89{% elif score >= 5 %}#11CDEF{% else %}#FF6B8A{% endif %}">{{ score }}/10</div>
+        <div class="stat-label">Average Score</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" style="color:var(--c4)">{{ total_questions }}</div>
+        <div class="stat-label">Total Questions</div>
+      </div>
+    </div>
+    {% endwith %}
+
+    <!-- ── Skill Radar Chart ── -->
+    {% if skill_labels %}
+    <div class="radar-card">
+      <div class="radar-title">🕸️ Skill Radar</div>
+      <div class="radar-subtitle">Your performance across detected skills</div>
+      <div class="radar-canvas-wrap">
+        <canvas id="radarChart" width="380" height="380"></canvas>
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="section-head">📋 Question-by-Question Breakdown</div>
+
+    {% for attempt in attempts %}
+    {% with s=attempt.score %}
+    <div class="attempt-card">
+      <div class="attempt-head">
+        <div class="attempt-score {% if s >= 7 %}high{% elif s >= 5 %}mid{% else %}low{% endif %}">{{ s }}</div>
+        <div class="attempt-q">{{ attempt.question.question_text }}</div>
+      </div>
+
+      <div class="detail-section">
+        <div class="detail-label">Your Answer</div>
+        <div class="detail-body ans-body">{{ attempt.user_answer }}</div>
+      </div>
+
+      {% if attempt.ai_feedback %}
+      <div class="detail-section">
+        <div class="detail-label" style="color:var(--c1)">AI Feedback</div>
+        <div class="detail-body">{{ attempt.ai_feedback }}</div>
+      </div>
+      {% endif %}
+
+      <!-- ── Follow-up Questions ── -->
+      <div class="followup-section">
+        <button class="btn-followup"
+                id="followupBtn{{ forloop.counter0 }}"
+                onclick="loadFollowups({{ forloop.counter0 }}, {{ attempt.question.id }}, {{ session.id }}, '{{ attempt.user_answer|escapejs }}')">
+          🎤 See Follow-up Questions an Interviewer Would Ask
+        </button>
+        <div class="followup-card" id="followupCard{{ forloop.counter0 }}"></div>
+      </div>
+
+      <!-- ── Retry Answer ── -->
+      <div class="retry-section">
+        <button class="btn-retry" onclick="toggleRetry({{ forloop.counter0 }})">
+          🔁 Retry This Answer
+        </button>
+        <div class="retry-card" id="retryCard{{ forloop.counter0 }}">
+          <textarea class="retry-textarea"
+                    id="retryText{{ forloop.counter0 }}"
+                    placeholder="Write an improved answer based on the feedback above…"></textarea>
+          <button class="btn-retry-submit"
+                  id="retrySubmitBtn{{ forloop.counter0 }}"
+                  onclick="submitRetry({{ forloop.counter0 }}, {{ attempt.question.id }}, {{ session.id }})">
+            ✨ Submit Improved Answer
+          </button>
+        </div>
+        <div class="retry-result" id="retryResult{{ forloop.counter0 }}"></div>
+      </div>
+
+    </div>
+    {% endwith %}
+    {% empty %}
+    <p style="color:var(--muted);">No answers recorded yet.</p>
+    {% endfor %}
+
+    <!-- ── CTA Row ── -->
+    <div class="cta-row">
+      <a href="{% url 'export_report_pdf' session.id %}" class="btn-cta btn-cta-pdf">📄 Download PDF</a>
+      <button onclick="shareReport({{ session.id }})" class="btn-cta btn-cta-share">🔗 Share Report</button>
+      <a href="{% url 'practice' %}" class="btn-cta btn-cta-primary">🎯 Practice More</a>
+      <a href="{% url 'home' %}" class="btn-cta btn-cta-outline">🔄 New Interview</a>
+      <a href="{% url 'dashboard' %}" class="btn-cta btn-cta-outline">📊 Dashboard</a>
+    </div>
+
+  </div>
+</div>
+
+<!-- Share Toast -->
+<div class="share-toast" id="shareToast">
+  <span>✅ Link copied!</span>
+  <span class="share-toast-link" id="shareToastLink"></span>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+const CSRF = '{{ csrf_token }}';
+
+// ── Gauge animation ────────────────────────────────────────
+window.addEventListener('load', () => {
+  const score = {{ report.overall_score }};
+  const circumference = 440;
+  const offset = circumference - (score / 10) * circumference;
+  setTimeout(() => {
+    document.getElementById('gaugeFill').style.strokeDashoffset = offset;
+  }, 200);
+});
+
+// ── Skill Radar Chart ──────────────────────────────────────
+{% if skill_labels %}
+(function() {
+  const labels = {{ skill_labels|safe }};
+  const scores = {{ skill_scores|safe }};
+  if (!labels.length) return;
+
+  const ctx = document.getElementById('radarChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'radar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Your Score',
+        data: scores,
+        backgroundColor: 'rgba(124,111,255,0.18)',
+        borderColor: '#7C6FFF',
+        borderWidth: 2.5,
+        pointBackgroundColor: '#7C6FFF',
+        pointBorderColor: '#fff',
+        pointBorderWidth: 2,
+        pointRadius: 5,
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        r: {
+          min: 0, max: 10,
+          ticks: { stepSize: 2, font: { size: 11 }, color: '#9ca3af' },
+          pointLabels: { font: { size: 12, weight: '600' }, color: '#374151' },
+          grid: { color: 'rgba(124,111,255,0.10)' },
+          angleLines: { color: 'rgba(124,111,255,0.10)' },
+        }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => ` Score: ${ctx.raw}/10`
+          }
+        }
+      }
+    }
+  });
+})();
+{% endif %}
+
+// ── Share Report ───────────────────────────────────────────
+async function shareReport(sessionId) {
+  try {
+    const res = await fetch(`/report/${sessionId}/share/`, {
+      method: 'POST',
+      headers: { 'X-CSRFToken': CSRF, 'Content-Type': 'application/json' }
+    });
+    const data = await res.json();
+    if (data.url) {
+      await navigator.clipboard.writeText(data.url);
+      const toast = document.getElementById('shareToast');
+      document.getElementById('shareToastLink').textContent = data.url;
+      toast.classList.add('visible');
+      setTimeout(() => toast.classList.remove('visible'), 3500);
+    }
+  } catch(err) {
+    alert('Could not generate share link. Try again.');
+  }
+}
+
+// ── Follow-up Questions ────────────────────────────────────
+async function loadFollowups(idx, qid, sid, answer) {
+  const btn = document.getElementById('followupBtn' + idx);
+  const card = document.getElementById('followupCard' + idx);
+
+  if (card.classList.contains('visible')) {
+    card.classList.remove('visible');
+    btn.textContent = '🎤 See Follow-up Questions an Interviewer Would Ask';
+    return;
+  }
+
+  if (card.innerHTML.trim()) {
+    card.classList.add('visible');
+    btn.textContent = '🙈 Hide Follow-up Questions';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="mini-spinner"></span> Generating follow-ups…';
+
+  try {
+    const res = await fetch('/followup-question/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+      body: JSON.stringify({ session_id: sid, question_id: qid, answer })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+
+    const followups = data.followups || [];
+    card.innerHTML = `
+      <div class="followup-label">💬 An Interviewer Would Ask Next…</div>
+      ${followups.map((q, i) => `
+        <div class="followup-item">
+          <div class="followup-num">${i + 1}</div>
+          <div>${q}</div>
+        </div>
+      `).join('')}
+    `;
+    card.classList.add('visible');
+    btn.textContent = '🙈 Hide Follow-up Questions';
+  } catch(err) {
+    card.innerHTML = `<div style="color:var(--c2);font-size:14px;padding:10px;">⚠️ ${err.message}</div>`;
+    card.classList.add('visible');
+    btn.textContent = '🎤 See Follow-up Questions';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// ── Retry Answer ───────────────────────────────────────────
+function toggleRetry(idx) {
+  const card = document.getElementById('retryCard' + idx);
+  card.classList.toggle('visible');
+}
+
+async function submitRetry(idx, qid, sid) {
+  const textarea = document.getElementById('retryText' + idx);
+  const submitBtn = document.getElementById('retrySubmitBtn' + idx);
+  const resultDiv = document.getElementById('retryResult' + idx);
+  const answer = textarea.value.trim();
+
+  if (!answer || answer.length < 5) {
+    alert('Please write a proper improved answer before submitting.');
+    return;
+  }
+
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = '<span class="mini-spinner"></span> Evaluating…';
+
+  try {
+    const res = await fetch('/retry-answer/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+      body: JSON.stringify({ session_id: sid, question_id: qid, answer })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+
+    const improved = data.improved;
+    const scoreColor = data.score >= 7 ? '#2DCE89' : data.score >= 5 ? '#11CDEF' : '#FF6B8A';
+    const origColor  = data.original_score >= 7 ? '#2DCE89' : data.original_score >= 5 ? '#11CDEF' : '#FF6B8A';
+
+    resultDiv.innerHTML = `
+      <div style="background:rgba(255,255,255,0.85);border:1.5px solid var(--border);border-radius:16px;padding:20px;">
+        <div style="text-align:center;margin-bottom:14px;">
+          <span class="retry-badge ${improved ? 'improved' : 'same'}">
+            ${improved ? '⬆️ Improved!' : '→ Similar Score'}
+          </span>
+        </div>
+        <div class="retry-comparison">
+          <div class="retry-before">
+            <div class="retry-score-val" style="color:${origColor}">${data.original_score}/10</div>
+            <div class="retry-score-label">Original Score</div>
+          </div>
+          <div class="retry-after">
+            <div class="retry-score-val" style="color:${scoreColor}">${data.score}/10</div>
+            <div class="retry-score-label">Retry Score</div>
+          </div>
+        </div>
+        ${data.feedback ? `
+          <div class="detail-section">
+            <div class="detail-label" style="color:var(--c1)">Feedback on Retry</div>
+            <div class="detail-body">${data.feedback}</div>
+          </div>` : ''}
+        ${data.improvement ? `
+          <div class="detail-section">
+            <div class="detail-label" style="color:#1aaa70">✅ What Improved</div>
+            <div class="detail-body">${data.improvement}</div>
+          </div>` : ''}
+        ${data.still_missing ? `
+          <div class="detail-section">
+            <div class="detail-label" style="color:#d9405a">⬆️ Still Missing</div>
+            <div class="detail-body">${data.still_missing}</div>
+          </div>` : ''}
+      </div>`;
+    resultDiv.classList.add('visible');
+    document.getElementById('retryCard' + idx).classList.remove('visible');
+    submitBtn.textContent = '✨ Submit Improved Answer';
+    submitBtn.disabled = false;
+
+  } catch(err) {
+    resultDiv.innerHTML = `<div style="color:var(--c2);padding:12px;font-size:14px;">⚠️ ${err.message}</div>`;
+    resultDiv.classList.add('visible');
+    submitBtn.disabled = false;
+    submitBtn.textContent = '✨ Submit Improved Answer';
+  }
+}
+</script>
+{% endblock %}

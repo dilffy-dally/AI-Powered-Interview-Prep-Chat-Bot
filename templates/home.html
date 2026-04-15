@@ -1,0 +1,513 @@
+{% extends 'base.html' %}
+{% block title %}Home — PrepAI{% endblock %}
+{% block extra_css %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap');
+
+:root {
+  --bg: #0d0e14;
+  --surface: #14151f;
+  --surface2: #1a1b28;
+  --panel: #1e1f2e;
+  --border: rgba(255,255,255,0.07);
+  --border-active: rgba(139,92,246,0.5);
+  --text: #f0f0f8;
+  --muted: #6b6b8a;
+  --muted2: #9898b8;
+  --accent: #8b5cf6;
+  --accent2: #a78bfa;
+  --teal: #06b6d4;
+  --green: #34d399;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
+}
+
+/* NAV */
+.app-nav {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 40px; height: 60px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(13,14,20,0.8);
+  backdrop-filter: blur(12px);
+  position: sticky; top: 0; z-index: 100;
+}
+.logo { 
+  font-family: 'Syne', sans-serif; 
+  font-weight: 800; 
+  font-size: 18px; 
+  background: linear-gradient(135deg, #7c3aed, #06b6d4) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  text-decoration: none; 
+  letter-spacing: -0.5px; 
+}
+
+.nav-right { display: flex; align-items: center; gap: 6px; }
+.nav-link { color: var(--muted2); text-decoration: none; font-size: 14px; font-weight: 600; padding: 7px 18px; border-radius: 999px; border: 1px solid transparent; transition: all 0.2s; }
+.nav-link:hover { color: var(--text); background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1); }
+.nav-link.active { color: #fff !important; background: var(--accent) !important; border-color: transparent !important; box-shadow: 0 2px 12px rgba(139,92,246,0.4); }
+.nav-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-left: 8px; }
+.btn-logout { padding: 6px 16px; border: 1px solid var(--border); border-radius: 8px; color: var(--muted2); font-size: 13px; font-weight: 500; text-decoration: none; transition: all 0.2s; background: none; }
+.btn-logout:hover { color: var(--text); border-color: rgba(255,255,255,0.15); }
+
+/* HERO — tightened */
+.hero-header { text-align: center; padding: 40px 24px 32px; }
+.hero-title { font-family: 'Syne', sans-serif; font-size: 46px; font-weight: 800; letter-spacing: -2px; line-height: 1.1; margin-bottom: 12px; color: var(--text); }
+.hero-title em { font-style: normal; font-weight: 700; background: linear-gradient(135deg, #a78bfa 0%, #06b6d4 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.hero-sub { color: var(--muted); font-size: 15px; line-height: 1.5; max-width: 400px; margin: 0 auto; }
+
+/* FORGE PANEL */
+.forge-wrap { max-width: 980px; margin: 0 auto; padding: 0 24px 60px; }
+.forge-panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 28px;
+  padding: 28px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+}
+
+/* LEFT */
+.tab-row { display: flex; gap: 2px; background: rgba(255,255,255,0.04); border-radius: 12px; padding: 4px; margin-bottom: 20px; }
+.tab-btn { flex: 1; padding: 8px 14px; border: none; border-radius: 9px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; color: var(--muted); background: transparent; }
+.tab-btn.active { background: var(--accent); color: #fff; box-shadow: 0 2px 12px rgba(139,92,246,0.4); }
+
+/* Upload zone — compact */
+.upload-zone {
+  border: 2px dashed rgba(139,92,246,0.25);
+  border-radius: 16px; padding: 28px 20px;
+  text-align: center; cursor: pointer;
+  transition: all 0.25s; background: rgba(139,92,246,0.03);
+  position: relative; display: block;
+}
+.upload-zone:hover, .upload-zone.dragover { border-color: var(--accent); background: rgba(139,92,246,0.08); }
+.upload-icon { font-size: 30px; margin-bottom: 8px; display: block; }
+.upload-text { font-size: 14px; color: var(--muted2); margin-bottom: 3px; }
+.upload-text a { color: var(--accent2); text-decoration: none; }
+.upload-sub { font-size: 11px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
+.upload-zone input[type="file"] { display: none; }
+
+.file-selected { display: none; align-items: center; gap: 12px; background: rgba(52,211,153,0.07); border: 1px solid rgba(52,211,153,0.2); border-radius: 14px; padding: 12px 16px; margin-top: 8px; }
+.file-icon { font-size: 18px; }
+.file-name { flex: 1; font-size: 13px; font-weight: 600; color: var(--text); }
+.file-size { font-size: 12px; color: var(--muted); }
+.file-remove { background: none; border: none; color: #f87171; cursor: pointer; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 6px; transition: background 0.2s; }
+.file-remove:hover { background: rgba(248,113,113,0.1); }
+
+/* panels */
+.upload-panel { display: none; }
+.jd-panel { display: none; }
+
+/* JD textarea */
+.jd-required-note { display: flex; align-items: center; gap: 8px; background: rgba(139,92,246,0.08); border: 1px solid rgba(139,92,246,0.2); border-radius: 10px; padding: 10px 14px; margin-bottom: 12px; font-size: 13px; color: var(--muted2); }
+.jd-required-note span { color: var(--accent2); font-weight: 600; }
+.jd-textarea { width: 100%; min-height: 160px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 14px; color: var(--text); font-size: 14px; font-family: 'DM Sans', sans-serif; padding: 14px; resize: vertical; outline: none; transition: border-color 0.2s; line-height: 1.7; }
+.jd-textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(139,92,246,0.12); }
+.jd-textarea::placeholder { color: var(--muted); }
+.jd-textarea.error { border-color: #f87171; box-shadow: 0 0 0 3px rgba(248,113,113,0.12); }
+.jd-toolbar { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+.mic-btn { width: 36px; height: 36px; border-radius: 50%; background: rgba(139,92,246,0.12); border: 1px solid rgba(139,92,246,0.25); color: var(--accent2); font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+.mic-btn:hover { background: rgba(139,92,246,0.22); }
+.mic-btn.recording { background: rgba(248,113,113,0.15); border-color: #f87171; color: #f87171; animation: pulse 1s infinite; }
+@keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(248,113,113,0.3)} 50%{box-shadow:0 0 0 8px rgba(248,113,113,0)} }
+.char-count { color: var(--muted); font-size: 12px; margin-left: auto; font-family: 'Space Mono', monospace; }
+
+/* Role field */
+.role-field-wrap { margin-top: 14px; }
+.field-label { font-size: 11px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+.role-input { width: 100%; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; color: var(--text); font-size: 14px; font-family: 'DM Sans', sans-serif; padding: 11px 14px; outline: none; transition: border-color 0.2s; }
+.role-input:focus { border-color: var(--accent); }
+.role-input::placeholder { color: var(--muted); }
+
+/* Field error */
+.field-error { color: #f87171; font-size: 12px; margin-top: 6px; display: none; padding-left: 4px; }
+.field-error.visible { display: block; }
+
+/* RIGHT */
+.sim-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 18px; }
+.sim-label { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); }
+.sim-time { text-align: right; }
+.sim-time-value { font-family: 'Space Mono', monospace; font-size: 26px; font-weight: 700; color: var(--text); line-height: 1; }
+.sim-time-unit { font-size: 12px; color: var(--muted); font-family: 'Space Mono', monospace; }
+
+.slider-wrap { margin-bottom: 22px; }
+.depth-slider { width: 100%; height: 4px; -webkit-appearance: none; appearance: none; border-radius: 4px; outline: none; cursor: pointer; }
+.depth-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 3px rgba(139,92,246,0.4), 0 2px 8px rgba(0,0,0,0.4); cursor: pointer; transition: box-shadow 0.2s; }
+.depth-slider::-webkit-slider-thumb:hover { box-shadow: 0 0 0 5px rgba(139,92,246,0.3), 0 2px 8px rgba(0,0,0,0.4); }
+.slider-ticks { display: flex; justify-content: space-between; margin-top: 6px; }
+.slider-tick { font-size: 11px; color: var(--muted); font-family: 'Space Mono', monospace; letter-spacing: 0.5px; }
+
+.config-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+.config-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 14px; padding: 14px; cursor: pointer; transition: all 0.25s; }
+.config-card:hover { border-color: rgba(139,92,246,0.35); background: rgba(139,92,246,0.06); }
+.config-card.selected { border-color: var(--accent); background: rgba(139,92,246,0.1); }
+.config-card-icon { font-size: 16px; margin-bottom: 8px; display: block; }
+.config-card-key { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 3px; }
+.config-card-val { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; color: var(--text); line-height: 1.3; }
+
+.status-row { display: flex; align-items: center; gap: 8px; justify-content: center; margin-top: 10px; }
+.status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 6px var(--green); animation: blink 2s ease-in-out infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+.status-text { font-size: 11px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: var(--muted); }
+
+.btn-generate { width: 100%; padding: 14px; background: var(--text); border: none; border-radius: 14px; color: #0d0e14; font-size: 15px; font-weight: 700; font-family: 'DM Sans', sans-serif; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.3s; letter-spacing: -0.2px; box-shadow: 0 4px 24px rgba(0,0,0,0.4); }
+.btn-generate:hover:not(:disabled) { transform: translateY(-2px); background: #fff; box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
+.btn-generate:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* RECENT SESSIONS */
+.recent-wrap { max-width: 980px; margin: 0 auto; padding: 0 24px 60px; }
+.recent-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.recent-label { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); }
+.recent-line { flex: 1; height: 1px; background: var(--border); }
+.sessions-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
+.session-card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px; text-decoration: none; display: flex; flex-direction: column; gap: 7px; transition: all 0.2s; }
+.session-card:hover { border-color: rgba(139,92,246,0.35); transform: translateY(-2px); }
+.session-role { font-weight: 600; font-size: 14px; color: var(--text); }
+.session-meta { display: flex; align-items: center; justify-content: space-between; }
+.session-date { font-size: 12px; color: var(--muted); font-family: 'Space Mono', monospace; }
+.session-badge { font-size: 11px; padding: 3px 10px; border-radius: 999px; background: rgba(139,92,246,0.12); color: var(--accent2); border: 1px solid rgba(139,92,246,0.22); font-weight: 600; }
+
+/* LOADING OVERLAY */
+.loading-overlay { display: none; position: fixed; inset: 0; z-index: 999; background: rgba(13,14,20,0.92); backdrop-filter: blur(12px); flex-direction: column; align-items: center; justify-content: center; gap: 20px; }
+.loading-overlay.active { display: flex; }
+.spinner { width: 52px; height: 52px; border-radius: 50%; border: 3px solid rgba(139,92,246,0.15); border-top-color: var(--accent); animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; color: var(--text); }
+.loading-sub { color: var(--muted); font-size: 14px; }
+
+/* ERROR */
+.error-box { max-width: 980px; margin: 0 auto 20px; padding: 0 24px; }
+.error-inner { background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.22); border-radius: 14px; padding: 12px 16px; color: #f87171; font-size: 14px; }
+
+/* FOOTER BADGES */
+.forge-badges { display: flex; justify-content: center; gap: 28px; padding: 0 24px 40px; flex-wrap: wrap; }
+.badge-item { display: flex; align-items: center; gap: 10px; }
+.badge-icon { width: 34px; height: 34px; border-radius: 10px; background: var(--panel); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 14px; }
+.badge-text { font-size: 13px; font-weight: 600; color: var(--muted2); }
+.badge-sub { font-size: 11px; color: var(--muted); }
+
+@media (max-width: 720px) {
+  .forge-panel { grid-template-columns: 1fr; }
+  .hero-title { font-size: 34px; }
+  .config-cards { grid-template-columns: 1fr 1fr; }
+}
+</style>
+{% endblock %}
+
+{% block body %}
+
+<nav class="app-nav">
+  <a href="{% url 'landing' %}" class="logo">PrepAI</a>
+  <div class="nav-right">
+    <a href="{% url 'home' %}" class="nav-link active">Home</a>
+    <a href="{% url 'practice' %}" class="nav-link">Practice</a>
+    <a href="{% url 'dashboard' %}" class="nav-link">Dashboard</a>
+    <a href="{% url 'video_setup' %}" class="nav-link">🎥 Video</a>
+    <a href="{% url 'leaderboard' %}" class="nav-link">🏆</a>
+    <div class="nav-avatar">{{ request.user.username|first|upper }}</div>
+    <a href="{% url 'logout' %}" class="btn-logout">Logout</a>
+  </div>
+</nav>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loadingText">Analyzing...</div>
+  <div class="loading-sub" id="loadingSub">Generating your personalized interview questions</div>
+</div>
+
+<div class="hero-header">
+  <div class="hero-title">Precision <em>Interview</em> Forge</div>
+  <div class="hero-sub">Upload your resume or paste a job description to generate a tailored mock interview.</div>
+</div>
+
+{% if error %}
+<div class="error-box">
+  <div class="error-inner">⚠️ {{ error }}</div>
+</div>
+{% endif %}
+
+<div class="forge-wrap">
+  <form method="POST" action="{% url 'analyze_jd' %}" id="jdForm" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="hidden" name="sim_minutes" id="simMinutesInput" value="20">
+
+    <div class="forge-panel">
+
+      <!-- LEFT -->
+      <div class="forge-left">
+
+        <div class="tab-row">
+          <button type="button" class="tab-btn active" id="tabResume" onclick="switchTab('resume')">📄 Upload Resume</button>
+          <button type="button" class="tab-btn" id="tabJD" onclick="switchTab('jd')">📋 Job Description Only</button>
+        </div>
+
+        <!-- RESUME TAB: only file upload + role field, NO jd box here -->
+        <div class="upload-panel" id="uploadPanel" style="display:block;">
+          <label class="upload-zone" id="resumeDropZone" for="resumeInput">
+            <span class="upload-icon">☁️</span>
+            <div class="upload-text">Drag and drop your resume or <a>browse</a></div>
+            <div class="upload-sub">PDF · DOCX · DOC · TXT &nbsp;|&nbsp; Max 5MB</div>
+            <input type="file" id="resumeInput" name="resume"
+              accept=".pdf,.doc,.docx,.txt"
+              onchange="onResumeSelect(this)">
+          </label>
+          <div class="file-selected" id="fileSelected">
+            <span class="file-icon">📄</span>
+            <span class="file-name" id="fileName">resume.pdf</span>
+            <span class="file-size" id="fileSize"></span>
+            <button type="button" class="file-remove" onclick="removeResume()">✕ Remove</button>
+          </div>
+          <!-- NO jd textarea here on purpose — resume tab is resume only -->
+        </div>
+
+        <!-- JD-ONLY TAB -->
+        <div class="jd-panel" id="jdPanel" style="display:none;">
+          <div class="jd-required-note">
+            📋 Paste the full job description below. <span>Resume optional on this tab.</span>
+          </div>
+          <textarea name="jd_text" id="jdText" class="jd-textarea"
+            placeholder="Paste the full job description here — role, responsibilities, required skills, qualifications..."
+            rows="7"></textarea>
+          <div class="field-error" id="jdError">⚠️ Please paste a job description (at least 10 characters).</div>
+          <div class="jd-toolbar">
+            <button type="button" class="mic-btn" id="micBtn" title="Speak your JD">🎤</button>
+            <span style="color:var(--muted);font-size:12px;" id="micStatus">Click mic to dictate</span>
+            <span class="char-count" id="charCount">0 chars</span>
+          </div>
+        </div>
+
+        <!-- Role field — shown on both tabs -->
+        <div class="role-field-wrap">
+          <div class="field-label">Target Role Context</div>
+          <input type="text" name="target_role" id="targetRole" class="role-input"
+            placeholder="e.g. Senior Full Stack Developer">
+        </div>
+
+      </div>
+
+      <!-- RIGHT -->
+      <div class="forge-right">
+        <div class="sim-header">
+          <div class="sim-label">Simulation Depth</div>
+          <div class="sim-time">
+            <span class="sim-time-value" id="simTimeDisplay">20</span>
+            <span class="sim-time-unit"> min / <span id="simQCount">15</span> Qs</span>
+          </div>
+        </div>
+
+        <div class="slider-wrap">
+          <input type="range" class="depth-slider" id="depthSlider" min="10" max="40" step="10" value="20">
+          <div class="slider-ticks">
+            <span class="slider-tick">10 MIN</span>
+            <span class="slider-tick">20 MIN</span>
+            <span class="slider-tick">30 MIN</span>
+            <span class="slider-tick">40 MIN</span>
+          </div>
+        </div>
+
+        <div class="config-cards">
+          <div class="config-card selected" id="cardFocus" onclick="toggleCard('cardFocus')">
+            <span class="config-card-icon">⚙️</span>
+            <div class="config-card-key">Focus Area</div>
+            <div class="config-card-val" id="focusVal">Technical Deep-dive</div>
+          </div>
+          <div class="config-card selected" id="cardIntensity" onclick="cycleIntensity()">
+            <span class="config-card-icon">⚡</span>
+            <div class="config-card-key">AI Intensity</div>
+            <div class="config-card-val" id="intensityVal">Executive Tier</div>
+          </div>
+        </div>
+
+        <input type="hidden" name="focus_area" id="focusInput" value="Technical Deep-dive">
+        <input type="hidden" name="ai_intensity" id="intensityInput" value="Executive Tier">
+
+        <button type="submit" class="btn-generate" id="submitBtn">
+          <span>✦</span> Verify &amp; Generate Session
+        </button>
+
+        <div class="status-row">
+          <div class="status-dot"></div>
+          <span class="status-text">System Ready For Parsing</span>
+        </div>
+      </div>
+
+    </div>
+  </form>
+</div>
+
+{% if recent_sessions %}
+<div class="recent-wrap">
+  <div class="recent-header">
+    <div class="recent-line"></div>
+    <div class="recent-label">Recent Sessions</div>
+    <div class="recent-line"></div>
+  </div>
+  <div class="sessions-grid">
+    {% for s in recent_sessions %}
+    <a href="{% url 'interview' s.id %}" class="session-card">
+      <div class="session-role">{{ s.detected_role|default:"Interview Session" }}</div>
+      <div class="session-meta">
+        <span class="session-date">{{ s.created_at|date:"M d, Y" }}</span>
+        <span class="session-badge">Continue →</span>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<div class="forge-badges">
+  <div class="badge-item">
+    <div class="badge-icon">🔒</div>
+    <div><div class="badge-text">Privacy First</div><div class="badge-sub">Encrypted document analysis</div></div>
+  </div>
+  <div class="badge-item">
+    <div class="badge-icon">🤖</div>
+    <div><div class="badge-text">Real-Time Feedback</div><div class="badge-sub">Powered by Prep AI Core v4</div></div>
+  </div>
+  <div class="badge-item">
+    <div class="badge-icon">📄</div>
+    <div><div class="badge-text">Multi-Format Resume</div><div class="badge-sub">PDF, DOCX, DOC, TXT supported</div></div>
+  </div>
+</div>
+
+<script>
+function switchTab(tab) {
+  const isResume = tab === 'resume';
+  document.getElementById('uploadPanel').style.display = isResume ? 'block' : 'none';
+  document.getElementById('jdPanel').style.display     = isResume ? 'none'  : 'block';
+  document.getElementById('tabResume').className = 'tab-btn' + (isResume ? ' active' : '');
+  document.getElementById('tabJD').className     = 'tab-btn' + (!isResume ? ' active' : '');
+  document.getElementById('jdError').classList.remove('visible');
+  document.getElementById('jdText').classList.remove('error');
+}
+
+/* Slider */
+const slider = document.getElementById('depthSlider');
+const qMap = { 10: 8, 20: 15, 30: 22, 40: 30 };
+function updateSlider() {
+  const val = parseInt(slider.value);
+  document.getElementById('simTimeDisplay').textContent = val;
+  document.getElementById('simQCount').textContent = qMap[val] || 15;
+  document.getElementById('simMinutesInput').value = val;
+  const pct = ((val - 10) / 30 * 100).toFixed(1);
+  slider.style.background = `linear-gradient(to right, #8b5cf6 0%, #8b5cf6 ${pct}%, rgba(255,255,255,0.08) ${pct}%, rgba(255,255,255,0.08) 100%)`;
+}
+slider.addEventListener('input', updateSlider);
+updateSlider();
+
+/* Config cards */
+const focusOptions = ['Technical Deep-dive', 'Behavioural', 'System Design', 'Mixed'];
+let focusIdx = 0;
+function toggleCard(id) {
+  focusIdx = (focusIdx + 1) % focusOptions.length;
+  const val = focusOptions[focusIdx];
+  document.getElementById('focusVal').textContent = val;
+  document.getElementById('focusInput').value = val;
+}
+const intensityOptions = ['Executive Tier', 'Mid-Level', 'Entry Level', 'Brutal Mode'];
+let intensityIdx = 0;
+function cycleIntensity() {
+  intensityIdx = (intensityIdx + 1) % intensityOptions.length;
+  const val = intensityOptions[intensityIdx];
+  document.getElementById('intensityVal').textContent = val;
+  document.getElementById('intensityInput').value = val;
+}
+
+/* Resume upload */
+function onResumeSelect(input) {
+  if (!input.files || !input.files[0]) return;
+  const file = input.files[0];
+  if (file.size > 5 * 1024 * 1024) { alert('File too large. Max 5MB.'); input.value = ''; return; }
+  document.getElementById('fileName').textContent = file.name;
+  document.getElementById('fileSize').textContent = (file.size / (1024*1024)).toFixed(2) + ' MB';
+  document.getElementById('resumeDropZone').style.display = 'none';
+  document.getElementById('fileSelected').style.display = 'flex';
+}
+function removeResume() {
+  document.getElementById('resumeInput').value = '';
+  document.getElementById('resumeDropZone').style.display = 'block';
+  document.getElementById('fileSelected').style.display = 'none';
+}
+
+/* Drag and drop */
+const dz = document.getElementById('resumeDropZone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragover'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+dz.addEventListener('drop', e => {
+  e.preventDefault(); dz.classList.remove('dragover');
+  const file = e.dataTransfer.files[0]; if (!file) return;
+  if (!file.name.match(/\.(pdf|doc|docx|txt)$/i)) { alert('Supported: PDF, DOC, DOCX, TXT'); return; }
+  const dt = new DataTransfer(); dt.items.add(file);
+  document.getElementById('resumeInput').files = dt.files;
+  onResumeSelect(document.getElementById('resumeInput'));
+});
+
+/* Mic */
+const micBtn = document.getElementById('micBtn');
+const micStatus = document.getElementById('micStatus');
+let recognition = null, isRecording = false;
+if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SR();
+  recognition.continuous = true; recognition.interimResults = true; recognition.lang = 'en-US';
+  recognition.onresult = e => {
+    let t = ''; for (let i = 0; i < e.results.length; i++) t += e.results[i][0].transcript;
+    document.getElementById('jdText').value = t;
+    document.getElementById('charCount').textContent = t.length + ' chars';
+  };
+  recognition.onerror = () => { micBtn.classList.remove('recording'); micStatus.textContent = 'Mic error.'; isRecording = false; };
+  recognition.onend   = () => { micBtn.classList.remove('recording'); micStatus.textContent = 'Click mic to dictate'; isRecording = false; };
+  micBtn.addEventListener('click', () => {
+    if (!isRecording) { recognition.start(); micBtn.classList.add('recording'); micStatus.textContent = 'Listening…'; isRecording = true; }
+    else { recognition.stop(); }
+  });
+} else { micBtn.style.opacity = '0.4'; micStatus.textContent = 'Not supported'; }
+
+document.getElementById('jdText').addEventListener('input', function() {
+  document.getElementById('charCount').textContent = this.value.length + ' chars';
+  if (this.value.trim().length >= 10) { this.classList.remove('error'); document.getElementById('jdError').classList.remove('visible'); }
+});
+
+/* Form submit */
+document.getElementById('jdForm').addEventListener('submit', function(e) {
+  const isResumeTab = document.getElementById('uploadPanel').style.display !== 'none';
+
+  if (!isResumeTab) {
+    // JD-only tab: require at least 10 chars
+    const jd = document.getElementById('jdText').value.trim();
+    if (jd.length < 10) {
+      e.preventDefault();
+      document.getElementById('jdText').classList.add('error');
+      document.getElementById('jdError').classList.add('visible');
+      document.getElementById('jdText').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+  } else {
+    // Resume tab: must have a file
+    const hasFile = document.getElementById('resumeInput').files.length > 0;
+    if (!hasFile) {
+      e.preventDefault();
+      alert('Please upload your resume first.');
+      return;
+    }
+  }
+
+  const hasResume = document.getElementById('resumeInput').files.length > 0;
+  document.getElementById('loadingText').textContent = hasResume ? 'Analyzing Resume...' : 'Analyzing Job Description...';
+  document.getElementById('loadingSub').textContent = hasResume ? 'Tailoring questions to your background 🎯' : 'Generating your personalized interview questions';
+  document.getElementById('loadingOverlay').classList.add('active');
+  document.getElementById('submitBtn').disabled = true;
+});
+</script>
+
+{% endblock %}
