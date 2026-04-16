@@ -73,3 +73,5 @@ GROQ_API_KEY = os.getenv('GROQ_API_KEY', '')
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/home/'
 LOGOUT_REDIRECT_URL = '/'
+
+ALLOWED_HOSTS = ['https://ai-powered-interview-prep-chat-bot-uwyy.onrender.com', 'localhost', '127.0.0.1']
